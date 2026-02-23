@@ -83,6 +83,9 @@ export default function LoginPage() {
           </button>
         </form>
 
+        <div className="mt-8 text-center text-zinc text-xs tracking-wider">
+          USAGE PERSONNEL
+        </div>
       </div>
     </main>
   )

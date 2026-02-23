@@ -90,4 +90,16 @@ export async function runMigrations() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
+  await sql`
+    CREATE TABLE IF NOT EXISTS day_plans (
+      id         SERIAL PRIMARY KEY,
+      date       DATE        NOT NULL UNIQUE,
+      title      TEXT        NOT NULL DEFAULT '',
+      emoji      TEXT        NOT NULL DEFAULT '📅',
+      type       TEXT        NOT NULL DEFAULT 'mixed',
+      items      JSONB       NOT NULL DEFAULT '[]',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
 }

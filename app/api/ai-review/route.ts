@@ -48,14 +48,14 @@ export async function POST(req: NextRequest) {
     if (!apiKey) throw new Error('GEMINI_API_KEY manquant dans les variables d\'environnement')
 
     const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
-            temperature: 1,
+            temperature: 0.7,
             maxOutputTokens: 1024,
           },
         }),

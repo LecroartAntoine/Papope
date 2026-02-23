@@ -56,7 +56,7 @@ Crée les 6 tables. Sûr à relancer — utilise `IF NOT EXISTS`.
 | **Jour → Bien-être** | Humeur, fatigue, stress, sommeil, alcool, douleur générale, notes perso |
 | **Semaine** | Vue d'ensemble des 7 jours avec % complétion |
 | **Progrès** | Graphiques : douleur, poids, bien-être, nutrition, escalade |
-| **Coach IA** | Bilan hebdomadaire par **Google Gemini 1.5 Flash** (API gratuite) |
+| **Coach IA** | Bilan hebdomadaire par **Google Gemini 2.5 Flash** (API gratuite) |
 
 ## Schéma base de données
 
@@ -71,7 +71,7 @@ climb_logs      — voies avec cotation, style, enchaîné/projet
 
 ## Coach IA — Google Gemini (gratuit)
 
-Le modèle **Gemini 1.5 Flash** est gratuit :
+Le modèle **Gemini 2.5 Flash** est gratuit :
 - 15 requêtes/minute
 - 1 million de tokens de contexte
 - Pas de carte bancaire requise

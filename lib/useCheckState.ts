@@ -96,7 +96,7 @@ export function useDayState(dateKey: string) {
       .finally(() => setSaving(false))
   }, [debouncedState, dateKey])
 
-  const toggleExercise = useCallback((id: string) => {
+  const toggleItem = useCallback((id: string) => {
     setState(s => ({
       ...s,
       exercises: { ...s.exercises, [id]: !s.exercises[id] },
@@ -157,7 +157,7 @@ export function useDayState(dateKey: string) {
     state,
     loading,
     saving,
-    toggleExercise,
+    toggleItem,
     setNotes,
     setPainLevel,
     setWeight,
