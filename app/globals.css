@@ -1,125 +1,110 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --cream: #F5F0E8;
-  --ink: #1A1614;
-  --papope: #FF3B30;
-  --accent: #FFD60A;
-  --muted: #8B7E74;
+  --font-mono: 'Space Mono', monospace;
+  --font-display: 'Barlow Condensed', sans-serif;
 }
 
-/* Grain overlay */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 150px 150px;
-  opacity: 0.035;
-  pointer-events: none;
-  z-index: 9999;
+* {
+  box-sizing: border-box;
 }
 
 html {
-  scroll-behavior: smooth;
+  background: #141414;
+  color: #F0EDE6;
+}
+
+body {
+  font-family: var(--font-mono);
+  background: #141414;
+  min-height: 100vh;
 }
 
 /* Custom scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--cream); }
-::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--ink); }
-
-/* Game canvas: no text select */
-.game-area {
-  user-select: none;
-  -webkit-user-select: none;
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #1E1E1E;
+}
+::-webkit-scrollbar-thumb {
+  background: #3A3A3A;
+  border-radius: 2px;
 }
 
-/* Prevent context menu on game */
-.game-area * {
-  -webkit-touch-callout: none;
-}
-
-/* Score float animation */
-@keyframes scoreFloat {
-  0%   { transform: translateY(0) scale(1); opacity: 1; }
-  100% { transform: translateY(-60px) scale(0.7); opacity: 0; }
-}
-.score-float {
-  animation: scoreFloat 0.7s ease-out forwards;
-}
-
-/* Head click effect */
-@keyframes headClick {
-  0%   { transform: scale(1); filter: brightness(1); }
-  30%  { transform: scale(0.85); filter: brightness(1.4); }
-  100% { transform: scale(1); filter: brightness(1); }
-}
-.head-clicked {
-  animation: headClick 0.15s ease-out;
-}
-
-/* Glitch text effect */
-.glitch-text {
+/* Checkbox styles */
+.check-box {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #3A3A3A;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
   position: relative;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
 }
-.glitch-text::before,
-.glitch-text::after {
-  content: attr(data-text);
+
+.check-box:checked {
+  background: #C8F135;
+  border-color: #C8F135;
+}
+
+.check-box:checked::after {
+  content: '';
   position: absolute;
-  inset: 0;
-  clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
-}
-.glitch-text::before {
-  color: var(--papope);
-  transform: translateX(-2px);
-  animation: glitchBefore 3s infinite;
-}
-.glitch-text::after {
-  color: var(--accent);
-  transform: translateX(2px);
-  animation: glitchAfter 3s infinite;
+  top: 2px;
+  left: 5px;
+  width: 5px;
+  height: 9px;
+  border: 2px solid #141414;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
 }
 
-@keyframes glitchBefore {
-  0%, 90%, 100% { clip-path: polygon(0 0, 0 0, 0 0, 0 0); transform: translateX(0); }
-  91% { clip-path: polygon(0 25%, 100% 25%, 100% 40%, 0 40%); transform: translateX(-3px); }
-  93% { clip-path: polygon(0 60%, 100% 60%, 100% 75%, 0 75%); transform: translateX(3px); }
-  95% { clip-path: polygon(0 0, 0 0, 0 0, 0 0); }
+/* Subtle grid background */
+.grid-bg {
+  background-image: 
+    linear-gradient(rgba(200,241,53,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,241,53,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
-@keyframes glitchAfter {
-  0%, 88%, 100% { clip-path: polygon(0 0, 0 0, 0 0, 0 0); transform: translateX(0); }
-  89% { clip-path: polygon(0 50%, 100% 50%, 100% 65%, 0 65%); transform: translateX(3px); }
-  92% { clip-path: polygon(0 10%, 100% 10%, 100% 25%, 0 25%); transform: translateX(-3px); }
-  94% { clip-path: polygon(0 0, 0 0, 0 0, 0 0); }
+/* Animated border */
+@keyframes pulse-border {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
-/* Countdown numbers */
-.countdown-digit {
-  font-family: 'Space Mono', monospace;
-  font-weight: 700;
+.animate-pulse-border {
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+/* Progress bar */
+.progress-bar {
+  height: 3px;
+  background: #2A2A2A;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #C8F135;
+  border-radius: 2px;
+  transition: width 0.4s ease;
 }
 
 /* Card hover */
-.game-card {
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+.day-card {
+  transition: border-color 0.2s ease, transform 0.2s ease;
 }
-.game-card:hover {
-  transform: translateY(-4px) rotate(-0.5deg);
-  box-shadow: 8px 8px 0 var(--ink);
-}
-
-/* Locked card */
-.game-card-locked {
-  transition: transform 0.15s ease;
-}
-.game-card-locked:hover {
-  transform: translateY(-2px);
+.day-card:hover {
+  transform: translateY(-1px);
 }
