@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
 import { sql } from '@/lib/db'
 
-const DEFAULT_MODEL = 'gemini-2.5-flash-preview-04-17'
+const DEFAULT_MODEL = 'gemini-2.5-flash'
 
 async function getModel(): Promise<string> {
   try {

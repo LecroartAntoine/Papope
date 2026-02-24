@@ -8,8 +8,8 @@ async function getGeminiModel(): Promise<string> {
   const { sql: dbSql } = await import("@/lib/db")
   try {
     const { rows } = await dbSql`SELECT value FROM app_settings WHERE key = 'gemini_model'`
-    return rows[0]?.value ?? 'gemini-2.5-flash-preview-04-17'
-  } catch { return 'gemini-2.5-flash-preview-04-17' }
+    return rows[0]?.value ?? 'gemini-2.5-flash'
+  } catch { return 'gemini-2.5-flash' }
 }
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)

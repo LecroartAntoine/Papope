@@ -24,7 +24,7 @@ const TABLE_META: Record<string, { label: string; emoji: string; desc: string; c
 // Free Gemini models with quota info
 const GEMINI_MODELS = [
   {
-    id: 'gemini-2.5-flash-preview-04-17',
+    id: 'gemini-2.5-flash',
     name: 'Gemini 2.5 Flash',
     badge: 'RECOMMANDÉ',
     badgeColor: '#C8F135',
@@ -33,32 +33,14 @@ const GEMINI_MODELS = [
     tier: 'Gratuit',
   },
   {
-    id: 'gemini-2.0-flash',
-    name: 'Gemini 2.0 Flash',
-    badge: 'RAPIDE',
-    badgeColor: '#4EA8FF',
-    desc: 'Très rapide, multimodal. Excellent pour le chat temps réel.',
-    quota: '1 500 req/jour · 1M tokens/min',
+    id: 'gemini-2.5-flash-lite',
+    name: 'Gemini 2.5 Flash Lite',
+    badge: 'RECOMMANDÉ',
+    badgeColor: '#C8F135',
+    desc: 'Meilleur rapport qualité/vitesse. Raisonnement adaptatif.',
+    quota: '500 req/jour · 1M tokens/min',
     tier: 'Gratuit',
-  },
-  {
-    id: 'gemini-2.0-flash-lite',
-    name: 'Gemini 2.0 Flash Lite',
-    badge: 'ÉCONOMIQUE',
-    badgeColor: '#F5A623',
-    desc: 'Ultra-léger. Idéal si tu atteins les quotas.',
-    quota: '1 500 req/jour · 1M tokens/min',
-    tier: 'Gratuit',
-  },
-  {
-    id: 'gemini-1.5-flash',
-    name: 'Gemini 1.5 Flash',
-    badge: 'STABLE',
-    badgeColor: '#888888',
-    desc: 'Ancienne génération stable. Contexte 1M tokens.',
-    quota: '1 500 req/jour · 1M tokens/min',
-    tier: 'Gratuit',
-  },
+  }
 ]
 
 function fmtDate(d: string | null) {
@@ -184,7 +166,7 @@ function ActivitiesManager() {
 export function AdminPanel() {
   const [stats, setStats] = useState<TableStat[]>([])
   const [statsLoading, setStatsLoading] = useState(true)
-  const [currentModel, setCurrentModel] = useState('gemini-2.5-flash-preview-04-17')
+  const [currentModel, setCurrentModel] = useState('gemini-2.5-flash')
   const [savingModel, setSavingModel] = useState(false)
 
   const today = new Date()
