@@ -3,8 +3,8 @@ import './globals.css'
 import { Providers } from './providers'
 
 export const metadata: Metadata = {
-  title: 'Keep Pushing !',
-  description: 'Suivi sport, nutrition et bien-être',
+  title: 'Papope',
+  description: 'Mon coin sur internet.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -155,7 +155,51 @@ export async function runMigrations() {
     )
   `
   await sql`
-    INSERT INTO app_settings (key, value) VALUES ('gemini_model', 'gemini-2.5-flash')
+    INSERT INTO app_settings (key, value) VALUES ('gemini_model', 'gemini-2.5-flash-preview-04-17')
     ON CONFLICT (key) DO NOTHING
+  `
+}
+
+export async function runSupplementMigrations() {
+  // Flexible supplement definitions — user/AI editable
+  await sql`
+    CREATE TABLE IF NOT EXISTS supplements (
+      id          SERIAL PRIMARY KEY,
+      name        TEXT        NOT NULL,
+      unit        TEXT        NOT NULL DEFAULT 'g',
+      target      NUMERIC(8,2),
+      emoji       TEXT        NOT NULL DEFAULT '💊',
+      color       TEXT        NOT NULL DEFAULT '#C8F135',
+      hint        TEXT,
+      sort_order  INTEGER     NOT NULL DEFAULT 0,
+      is_enabled  BOOLEAN     NOT NULL DEFAULT true,
+      climb_only  BOOLEAN     NOT NULL DEFAULT false,
+      created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+
+  // Daily logs per supplement — replaces rigid nutrition_logs columns
+  await sql`
+    CREATE TABLE IF NOT EXISTS supplement_logs (
+      id            SERIAL PRIMARY KEY,
+      date          DATE        NOT NULL,
+      supplement_id INTEGER     NOT NULL REFERENCES supplements(id) ON DELETE CASCADE,
+      value         NUMERIC(8,2),
+      created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE(date, supplement_id)
+    )
+  `
+
+  // Seed default supplements (migration-safe)
+  await sql`
+    INSERT INTO supplements (name, unit, target, emoji, color, hint, sort_order, climb_only)
+    VALUES
+      ('Protéines',  'g',   150,  '🥩', '#C8F135', null,                              0, false),
+      ('Créatine',   'g',   5,    '⚡', '#F5A623', 'Prendre avec de l''eau',           1, false),
+      ('Eau',        'ml',  2500, '💧', '#64D8FF', null,                              2, false),
+      ('Collagène',  'g',   15,   '🦴', '#4EA8FF', '30–60 min avant la séance',       3, true)
+    ON CONFLICT DO NOTHING
   `
 }

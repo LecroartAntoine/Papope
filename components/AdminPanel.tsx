@@ -17,12 +17,14 @@ const TABLE_META: Record<string, { label: string; emoji: string; desc: string; c
   chat_history:   { label: 'Chat Coach IA',       emoji: '🤖', desc: 'Historique conversations avec Gemini',  color: '#C8F135' },
   body_metrics:   { label: 'Poids corporel',      emoji: '⚖',  desc: 'Mesures de poids quotidiennes',        color: '#F5A623' },
   activities:     { label: 'Activités',           emoji: '🏃', desc: 'Catalogue activités canoniques',        color: '#A78BFA' },
+  supplements:    { label: 'Suppléments',          emoji: '💊', desc: 'Définitions suppléments/nutrition',       color: '#FF9F43' },
+  supplement_logs:{ label: 'Logs nutrition',        emoji: '🧪', desc: 'Valeurs quotidiennes suppléments',        color: '#64D8FF' },
 }
 
 // Free Gemini models with quota info
 const GEMINI_MODELS = [
   {
-    id: 'gemini-2.5-flash',
+    id: 'gemini-2.5-flash-preview-04-17',
     name: 'Gemini 2.5 Flash',
     badge: 'RECOMMANDÉ',
     badgeColor: '#C8F135',
@@ -31,14 +33,32 @@ const GEMINI_MODELS = [
     tier: 'Gratuit',
   },
   {
-    id: 'gemini-2.5-flash-lite',
-    name: 'Gemini 2.5 Flash Lite',
+    id: 'gemini-2.0-flash',
+    name: 'Gemini 2.0 Flash',
+    badge: 'RAPIDE',
+    badgeColor: '#4EA8FF',
+    desc: 'Très rapide, multimodal. Excellent pour le chat temps réel.',
+    quota: '1 500 req/jour · 1M tokens/min',
+    tier: 'Gratuit',
+  },
+  {
+    id: 'gemini-2.0-flash-lite',
+    name: 'Gemini 2.0 Flash Lite',
     badge: 'ÉCONOMIQUE',
     badgeColor: '#F5A623',
-    desc: 'Version allégée. Idéal si tu atteins les quotas.',
-    quota: '500 req/jour · 1M tokens/min',
+    desc: 'Ultra-léger. Idéal si tu atteins les quotas.',
+    quota: '1 500 req/jour · 1M tokens/min',
     tier: 'Gratuit',
-  }
+  },
+  {
+    id: 'gemini-1.5-flash',
+    name: 'Gemini 1.5 Flash',
+    badge: 'STABLE',
+    badgeColor: '#888888',
+    desc: 'Ancienne génération stable. Contexte 1M tokens.',
+    quota: '1 500 req/jour · 1M tokens/min',
+    tier: 'Gratuit',
+  },
 ]
 
 function fmtDate(d: string | null) {

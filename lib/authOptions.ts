@@ -28,11 +28,19 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   pages: {
-    signIn: '/login',
+    signIn: '/keeppushing/login',
   },
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
+  callbacks: {
+    async redirect({ url, baseUrl }) {
+      // After sign in, go to KP dashboard
+      if (url.startsWith(baseUrl)) return url
+      if (url.startsWith('/')) return `${baseUrl}${url}`
+      return `${baseUrl}/keeppushing/dashboard`
+    },
+  },
 }

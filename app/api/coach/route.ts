@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
 import { sql } from '@/lib/db'
 
-const DEFAULT_MODEL = 'gemini-2.5-flash'
+const DEFAULT_MODEL = 'gemini-2.5-flash-preview-04-17'
 
 async function getModel(): Promise<string> {
   try {
@@ -20,7 +20,7 @@ async function callGemini(prompt: string, apiKey: string, model: string): Promis
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 1, maxOutputTokens: 4096 },
+        generationConfig: { temperature: 0.65, maxOutputTokens: 2048 },
       }),
     }
   )
@@ -58,14 +58,15 @@ export async function POST(req: NextRequest) {
     const { date, message, currentDayPlan, currentItems } = await req.json()
     await sql`INSERT INTO chat_history (date, role, content) VALUES (${date}, 'user', ${message})`
 
-    const [sessionRow, wellbeing, nutrition, painHistory, chatRows, activities] = await Promise.all([
+    const [sessionRow, wellbeing, nutrition, painHistory, chatRows, activities, supplements, suppLogs] = await Promise.all([
       sql`SELECT * FROM sessions WHERE date = ${date}`.then(r => r.rows[0] ?? null),
       sql`SELECT * FROM wellbeing_logs WHERE date = ${date}`.then(r => r.rows[0] ?? null),
       sql`SELECT * FROM nutrition_logs WHERE date = ${date}`.then(r => r.rows[0] ?? null),
       sql`SELECT date, pain_level FROM sessions WHERE date >= CURRENT_DATE - 14 AND pain_level IS NOT NULL ORDER BY date ASC`.then(r => r.rows),
       sql`SELECT role, content FROM chat_history WHERE date = ${date} ORDER BY created_at ASC`.then(r => r.rows),
-      // Load canonical activities so AI can reuse exact names
       sql`SELECT name, category, emoji FROM activities ORDER BY category, name`.then(r => r.rows).catch(() => []),
+      sql`SELECT id, name, unit, target, emoji, hint, climb_only, is_enabled, sort_order FROM supplements WHERE is_enabled = true ORDER BY sort_order ASC`.then(r => r.rows).catch(() => []),
+      sql`SELECT supplement_id, value FROM supplement_logs WHERE date = ${date}`.then(r => r.rows).catch(() => []),
     ])
 
     const model = await getModel()
@@ -74,23 +75,40 @@ export async function POST(req: NextRequest) {
       sessionRow, wellbeing, nutrition, painHistory,
       conversationHistory: chatRows.slice(0, -1),
       canonicalActivities: activities,
+      supplements,
+      suppLogs,
     })
     const rawText = await callGemini(prompt, apiKey, model)
 
     let coachMessage = rawText
     let patch: any = null
     let generatedDay: any = null
+    let supplementPatch: any = null
 
     try {
       const parsed = parseJson(rawText)
       coachMessage = parsed.message ?? rawText
       patch = parsed.patch ?? null
       generatedDay = parsed.generated_day ?? null
+      supplementPatch = parsed.supplement_patch ?? null
     } catch {
       coachMessage = rawText.replace(/```[\s\S]*?```/g, '').trim()
     }
 
-    // If AI created new activities in generated_day, register them canonically
+    // Apply supplement patch to logs
+    if (supplementPatch?.entries && Array.isArray(supplementPatch.entries)) {
+      for (const entry of supplementPatch.entries) {
+        if (!entry.supplement_id || entry.value == null) continue
+        await sql`
+          INSERT INTO supplement_logs (date, supplement_id, value, updated_at)
+          VALUES (${date}, ${entry.supplement_id}, ${entry.value}, NOW())
+          ON CONFLICT (date, supplement_id) DO UPDATE
+            SET value = EXCLUDED.value, updated_at = NOW()
+        `.catch(() => {})
+      }
+    }
+
+    // Register new activities if AI creates them
     if (generatedDay?.items) {
       for (const item of generatedDay.items) {
         if (!item.activity) continue
@@ -120,13 +138,14 @@ export async function POST(req: NextRequest) {
       `.catch(() => {})
     }
 
+    const patchData = patch || supplementPatch || generatedDay
     await sql`
       INSERT INTO chat_history (date, role, content, patch)
       VALUES (${date}, 'coach', ${coachMessage},
-        ${patch || generatedDay ? JSON.stringify(patch ?? { generated_day: true }) : null}::jsonb)
+        ${patchData ? JSON.stringify({ patch, supplementPatch, generated_day: !!generatedDay }) : null}::jsonb)
     `
 
-    return NextResponse.json({ message: coachMessage, patch, generatedDay })
+    return NextResponse.json({ message: coachMessage, patch, generatedDay, supplementPatch })
   } catch (err: any) {
     console.error('Coach error:', err)
     return NextResponse.json({ error: String(err) }, { status: 500 })
@@ -138,25 +157,32 @@ function buildPrompt(ctx: any): string {
     date, message, currentDayPlan, currentItems,
     sessionRow, wellbeing, nutrition, painHistory,
     conversationHistory, canonicalActivities,
+    supplements, suppLogs,
   } = ctx
 
-  // Format current items using the new flat structure
   const itemsList = (currentItems ?? []).map((item: any) => {
     const label = item.label || item.activity || item.name || '?'
     const details = [
       item.sets && `sets=${item.sets}`,
       item.weight && `poids=${item.weight}`,
       item.duration_min && `durée=${item.duration_min}min`,
-      item.km && `${item.km}km`,
-      item.elevation_m && `D+${item.elevation_m}m`,
     ].filter(Boolean).join(', ')
     return `  - id="${item.id}" cat=${item.category ?? 'unknown'} : ${label}${details ? ` (${details})` : ''}`
   }).join('\n') || '  (aucun item planifié)'
 
-  // Canonical activity list for deduplication
   const activityList = (canonicalActivities ?? [])
     .map((a: any) => `  [${a.category}] ${a.emoji} ${a.name}`)
     .join('\n') || '  (catalogue vide)'
+
+  // Build supplement context
+  const logsMap: Record<number, number | null> = {}
+  ;(suppLogs ?? []).forEach((r: any) => { logsMap[r.supplement_id] = r.value })
+
+  const suppList = (supplements ?? []).map((s: any) => {
+    const logged = logsMap[s.id] ?? null
+    const pct = s.target && logged != null ? Math.round((logged / s.target) * 100) : null
+    return `  - id=${s.id} "${s.name}" (${s.unit})${s.target ? ` objectif=${s.target}` : ''}${logged != null ? ` aujourd'hui=${logged} (${pct}%)` : ' non renseigné'}${s.hint ? ` [${s.hint}]` : ''}`
+  }).join('\n') || '  (aucun supplément configuré)'
 
   const wellbeingSummary = wellbeing
     ? `humeur=${wellbeing.humeur ?? '?'}/10, fatigue=${wellbeing.fatigue ?? '?'}/10, stress=${wellbeing.stress ?? '?'}/10, sommeil=${wellbeing.sommeil_h ?? '?'}h, alcool=${wellbeing.alcool_verres ?? '?'} verres, douleur=${wellbeing.douleur_generale ?? '?'}/10`
@@ -170,20 +196,19 @@ function buildPrompt(ctx: any): string {
     .map((m: any) => `${m.role === 'user' ? 'Utilisateur' : 'Coach'}: ${m.content}`)
     .join('\n')
 
-  return `Tu es un coach sportif IA dans l'app "Keep Pushing !". Tu adaptes et génères des séances.
+  return `Tu es un coach sportif et nutritionnel IA dans "Keep Pushing !". Tu adaptes les séances ET le suivi nutrition/suppléments.
 
 PROFIL : 84kg, 1,95m, grimpeur débutant, rétablissement tendineux bras (biceps/avant-bras).
-Activités régulières : Escalade (2×/sem), Beat Saber (jeu VR très physique, 2×/sem), Force, Randonnée.
+Activités régulières : Escalade (2×/sem), Beat Saber (VR, très physique), Force, Randonnée.
 Objectifs : progresser escalade, esthétique, éliminer douleurs.
 
-RÈGLES ABSOLUES :
+RÈGLES SPORT :
 - Douleur bras ≥4/10 → supprimer exercices bras
 - Jamais campus board ni entraînement max doigts
 - Toujours échauffement si séance physique
 
-CATALOGUE D'ACTIVITÉS CANONIQUES (utilise ces noms EXACTS pour éviter les doublons) :
+CATALOGUE D'ACTIVITÉS (noms exacts) :
 ${activityList}
-Si tu veux utiliser une activité hors catalogue, crée-la avec un nom précis, correct en français, casse titre.
 
 JOURNÉE : ${date} — ${currentDayPlan?.title ?? 'Sans plan'}
 Items actuels :
@@ -191,69 +216,46 @@ ${itemsList}
 
 Douleur bras : ${sessionRow?.pain_level ?? '?'}/10 · Moy 14j : ${painAvg ?? '?'}/10
 Bien-être : ${wellbeingSummary}
-Nutrition : ${nutrition ? `protéines=${nutrition.proteines_g ?? '?'}g` : 'Non renseigné'}
+
+SUPPLÉMENTS DU JOUR :
+${suppList}
 
 ${historyText ? `HISTORIQUE :\n${historyText}\n` : ''}
 MESSAGE : "${message}"
 
 ═══════════════════════════
-Réponds UNIQUEMENT en JSON valide (aucun texte autour, aucun bloc markdown).
+Réponds UNIQUEMENT en JSON valide (aucun texte autour).
 
-STRUCTURE DE RÉPONSE :
+STRUCTURE :
 {
-  "message": "Ta réponse courte en français (2-4 phrases max)",
+  "message": "Réponse courte (2-4 phrases)",
   "patch": null,
-  "generated_day": null
+  "generated_day": null,
+  "supplement_patch": null
 }
 
-── CAS 1 : Adapter la séance existante (douleur, fatigue, peu de temps) ──
-{
-  "message": "...",
-  "patch": {
-    "skip": ["id-exact"],
-    "modify": { "id-exact": { "sets": "2×6", "note": "raison courte" } },
-    "session_note": "résumé court <80 chars"
-  },
-  "generated_day": null
+── CAS SPORT : Adapter la séance existante ──
+"patch": { "skip": ["id"], "modify": { "id": { "sets": "2×6", "note": "raison" } }, "session_note": "..." }
+
+── CAS SPORT : Créer/remplacer la journée ──
+"generated_day": {
+  "title": "...", "emoji": "💪", "category": "strength",
+  "items": [{ "id": "gen-1", "category": "strength", "activity": "Rameur", "duration_min": 5, "checked": false }]
 }
 
-── CAS 2 : Créer/remplacer la journée entière ──
-{
-  "message": "...",
-  "patch": null,
-  "generated_day": {
-    "title": "Nom de la séance",
-    "emoji": "💪",
-    "category": "strength",
-    "items": [
-      {
-        "id": "gen-1",
-        "category": "strength",
-        "activity": "Rameur",
-        "label": "Échauffement rameur",
-        "duration_min": 5,
-        "checked": false
-      },
-      {
-        "id": "gen-2",
-        "category": "strength",
-        "activity": "Squat bulgare",
-        "sets": "3×8",
-        "weight": "PC",
-        "notes": "RIR 2",
-        "checked": false
-      }
-    ]
-  }
+── CAS NUTRITION : Logger ou ajuster un supplément ──
+Utilise supplement_patch quand l'utilisateur dit qu'il a pris quelque chose, ou si tu veux lui rappeler/confirmer.
+"supplement_patch": {
+  "entries": [
+    { "supplement_id": 1, "value": 150 },
+    { "supplement_id": 2, "value": 5 }
+  ],
+  "note": "J'ai mis à jour tes protéines et créatine du jour."
 }
 
-RÈGLES pour generated_day items :
-- "activity" doit correspondre EXACTEMENT à un nom du catalogue ci-dessus si possible
-- Si tu crées une nouvelle activité : utilise une casse titre correcte en français
-- "category" : movement | strength | recovery | event
-- Champs optionnels : label?, sets?, weight?, reps?, duration_min?, km?, elevation_m?, notes?
-- Commence toujours par un échauffement. Max 7–8 items.
-
-── CAS 3 : Discussion simple / encouragement ──
-patch et generated_day restent null.`
+── RÈGLES ──
+- supplement_id = l'ID exact de la liste des suppléments ci-dessus
+- Pour sport + nutrition simultanés : combine patch/generated_day ET supplement_patch
+- Si l'utilisateur parle d'un supplément non configuré, suggère-lui de l'ajouter via ⚙ Gérer
+- Pour simple conversation : tout à null`
 }

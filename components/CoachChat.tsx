@@ -9,12 +9,18 @@ interface Patch {
   session_note?: string
 }
 
+interface SupplementPatch {
+  entries: { supplement_id: number; value: number }[]
+  note?: string
+}
+
 interface ChatMessage {
   id: number
   role: 'user' | 'coach'
   content: string
   patch?: Patch | null
   generatedDay?: CustomDayPlan | null
+  supplementPatch?: SupplementPatch | null
 }
 
 interface Props {
@@ -23,9 +29,10 @@ interface Props {
   currentItems: DayItem[]
   onApplyPatch: (patch: Patch) => void
   onApplyGeneratedDay: (day: CustomDayPlan) => void
+  onSupplementsUpdated?: () => void
 }
 
-// ─── Patch badge ──────────────────────────────────────────────────────────────
+// ─── Action badge ─────────────────────────────────────────────────────────────
 
 function ActionBadge({ msg, applied, onApply }: {
   msg: ChatMessage
@@ -34,8 +41,17 @@ function ActionBadge({ msg, applied, onApply }: {
 }) {
   const hasPatch = msg.patch && (msg.patch.skip?.length || Object.keys(msg.patch.modify ?? {}).length)
   const hasDay = !!msg.generatedDay
+  const hasSupp = msg.supplementPatch && msg.supplementPatch.entries?.length > 0
 
-  if (!hasPatch && !hasDay) return null
+  if (!hasPatch && !hasDay && !hasSupp) return null
+
+  const actionLabel = (() => {
+    if (hasDay) return '🤖 Nouvelle séance générée'
+    if (hasPatch && hasSupp) return '⚡ Séance + nutrition adaptées'
+    if (hasPatch) return '⚡ Adaptation séance proposée'
+    if (hasSupp) return '🥗 Mise à jour nutrition'
+    return '⚡ Action proposée'
+  })()
 
   return (
     <div className={`mt-2 border p-2.5 text-xs font-mono transition-all ${
@@ -45,9 +61,7 @@ function ActionBadge({ msg, applied, onApply }: {
     }`}>
       <div className="flex items-center justify-between gap-2 mb-1.5">
         <span className={`uppercase tracking-wider ${applied ? 'text-accent' : 'text-info'}`}>
-          {applied
-            ? '✓ Appliqué'
-            : hasDay ? '🤖 Nouvelle séance générée' : '⚡ Adaptation proposée'}
+          {applied ? '✓ Appliqué' : actionLabel}
         </span>
         {!applied && (
           <button onClick={onApply} className="bg-accent text-carbon text-xs font-bold px-3 py-1 uppercase tracking-wider hover:bg-opacity-90 transition-all flex-shrink-0">
@@ -64,10 +78,16 @@ function ActionBadge({ msg, applied, onApply }: {
       )}
       {hasPatch && msg.patch && (
         <>
-          {(msg.patch.skip?.length ?? 0) > 0 && <div className="text-crit">→ {msg.patch.skip!.length} exercice{msg.patch.skip!.length > 1 ? 's' : ''} supprimé{msg.patch.skip!.length > 1 ? 's' : ''}</div>}
-          {Object.keys(msg.patch.modify ?? {}).length > 0 && <div className="text-warn">→ {Object.keys(msg.patch.modify!).length} exercice{Object.keys(msg.patch.modify!).length > 1 ? 's' : ''} allégé{Object.keys(msg.patch.modify!).length > 1 ? 's' : ''}</div>}
+          {(msg.patch.skip?.length ?? 0) > 0 && <div className="text-crit">→ {msg.patch.skip!.length} supprimé{msg.patch.skip!.length > 1 ? 's' : ''}</div>}
+          {Object.keys(msg.patch.modify ?? {}).length > 0 && <div className="text-warn">→ {Object.keys(msg.patch.modify!).length} allégé{Object.keys(msg.patch.modify!).length > 1 ? 's' : ''}</div>}
           {msg.patch.session_note && <div className="text-ghost italic mt-1">"{msg.patch.session_note}"</div>}
         </>
+      )}
+      {hasSupp && msg.supplementPatch && (
+        <div className="text-accent mt-1">
+          🥗 {msg.supplementPatch.entries.length} supplément{msg.supplementPatch.entries.length > 1 ? 's' : ''} mis à jour
+          {msg.supplementPatch.note && <span className="text-ghost"> · {msg.supplementPatch.note}</span>}
+        </div>
       )}
     </div>
   )
@@ -75,7 +95,7 @@ function ActionBadge({ msg, applied, onApply }: {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch, onApplyGeneratedDay }: Props) {
+export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch, onApplyGeneratedDay, onSupplementsUpdated }: Props) {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
@@ -125,51 +145,56 @@ export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch,
           date: dateKey,
           message: userMsg,
           currentDayPlan: currentDayPlan ?? null,
-          currentItems: currentItems,
+          currentItems,
         }),
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
+
+      // If supplements were updated server-side, trigger a refresh in parent
+      if (data.supplementPatch?.entries?.length) {
+        onSupplementsUpdated?.()
+      }
+
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         role: 'coach',
         content: data.message,
         patch: data.patch ?? null,
         generatedDay: data.generatedDay ?? null,
+        supplementPatch: data.supplementPatch ?? null,
       }])
     } catch (err: any) {
       setMessages(prev => [...prev, { id: Date.now() + 1, role: 'coach', content: `Erreur : ${err.message}` }])
     }
     setLoading(false)
-  }, [input, loading, dateKey, currentDayPlan, currentItems])
+  }, [input, loading, dateKey, currentDayPlan, currentItems, onSupplementsUpdated])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
 
   const applyMessage = useCallback((msg: ChatMessage) => {
-    if (msg.generatedDay) {
-      onApplyGeneratedDay(msg.generatedDay)
-    } else if (msg.patch) {
-      onApplyPatch(msg.patch)
-    }
+    if (msg.generatedDay) onApplyGeneratedDay(msg.generatedDay)
+    if (msg.patch) onApplyPatch(msg.patch)
+    // supplement_patch is already applied server-side, just trigger a UI refresh
+    if (msg.supplementPatch?.entries?.length) onSupplementsUpdated?.()
     setAppliedIds(prev => new Set([...prev, msg.id]))
-  }, [onApplyPatch, onApplyGeneratedDay])
+  }, [onApplyPatch, onApplyGeneratedDay, onSupplementsUpdated])
 
   const quickMessages = [
+    "J'ai pris mes compléments ce matin",
     "Je ne me sens pas bien aujourd'hui",
     'Mes bras me font mal',
     'Je suis très fatigué',
     'Génère-moi une séance jambes',
     'Je veux faire une rando',
     'Séance cardio plutôt',
-    'Je me sens en forme !',
     'Séance courte, 20 min max',
   ]
 
   return (
     <>
-      {/* Floating button */}
       <button
         onClick={() => setOpen(true)}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-accent text-carbon rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-all active:scale-95"
@@ -179,41 +204,35 @@ export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch,
         {hasUnread && <span className="absolute top-0 right-0 w-4 h-4 bg-crit rounded-full border-2 border-carbon" />}
       </button>
 
-      {/* Backdrop */}
       {open && <div className="fixed inset-0 z-40 bg-carbon bg-opacity-60 backdrop-blur-sm" onClick={() => setOpen(false)} />}
 
-      {/* Chat panel */}
       <div className={`fixed bottom-0 right-0 z-50 w-full sm:w-[440px] h-[88vh] sm:h-[640px] sm:bottom-6 sm:right-6 bg-carbon border border-steel flex flex-col transition-all duration-300 ${open ? 'translate-y-0 opacity-100' : 'translate-y-full sm:translate-y-8 opacity-0 pointer-events-none'}`}
         style={{ boxShadow: '0 0 60px rgba(0,0,0,0.7)' }}>
 
-        {/* Header */}
         <div className="px-4 py-3 border-b border-steel flex items-center justify-between flex-shrink-0 bg-slate">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-accent rounded-full flex items-center justify-center text-lg flex-shrink-0">🤖</div>
             <div>
               <div className="text-chalk text-sm font-mono font-bold">Coach IA</div>
-              <div className="text-ash text-xs font-mono">{currentDayPlan?.title ?? 'Séance du jour'} · Gemini 2.5 Flash</div>
+              <div className="text-ash text-xs font-mono">{currentDayPlan?.title ?? 'Séance du jour'} · Sport + Nutrition</div>
             </div>
           </div>
           <button onClick={() => setOpen(false)} className="text-ash hover:text-chalk text-lg w-8 h-8 flex items-center justify-center">✕</button>
         </div>
 
-        {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {historyLoaded && messages.length === 0 && (
             <div className="text-center py-6">
-              <div className="text-4xl mb-3">💪</div>
-              <div className="text-chalk text-sm font-mono mb-1">Prêt à adapter ou créer ta séance</div>
-              <div className="text-ash text-xs font-mono">Dis-moi ce que tu veux faire aujourd'hui.</div>
+              <div className="text-4xl mb-3">🤖</div>
+              <div className="text-chalk text-sm font-mono mb-1">Coach sport & nutrition</div>
+              <div className="text-ash text-xs font-mono">Parle-moi de ta séance, de ce que t'as mangé, de comment tu te sens…</div>
             </div>
           )}
-
           {!historyLoaded && (
             <div className="space-y-3">
               {[1,2,3].map(i => <div key={i} className={`flex ${i%2===0?'justify-start':'justify-end'}`}><div className="h-12 w-48 bg-steel animate-pulse rounded" /></div>)}
             </div>
           )}
-
           {messages.map((msg, idx) => (
             <div key={msg.id ?? idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[88%] flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
@@ -223,15 +242,10 @@ export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch,
                 <div className={`px-3 py-2.5 text-sm font-mono leading-relaxed ${msg.role === 'user' ? 'bg-accent text-carbon' : 'bg-slate border border-steel text-chalk'}`}>
                   {msg.content}
                 </div>
-                <ActionBadge
-                  msg={msg}
-                  applied={appliedIds.has(msg.id)}
-                  onApply={() => applyMessage(msg)}
-                />
+                <ActionBadge msg={msg} applied={appliedIds.has(msg.id)} onApply={() => applyMessage(msg)} />
               </div>
             </div>
           ))}
-
           {loading && (
             <div className="flex justify-start">
               <div className="bg-slate border border-steel px-4 py-3 flex items-center gap-1.5">
@@ -242,7 +256,6 @@ export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch,
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Quick suggestions */}
         {historyLoaded && messages.length === 0 && !loading && (
           <div className="px-4 pb-2 flex-shrink-0">
             <div className="text-xs text-ash font-mono mb-2 uppercase tracking-wider">Suggestions</div>
@@ -257,7 +270,6 @@ export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch,
           </div>
         )}
 
-        {/* Input */}
         <div className="p-3 border-t border-steel flex-shrink-0 bg-slate">
           <div className="flex gap-2 items-end">
             <textarea
@@ -265,7 +277,7 @@ export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch,
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Adapte ma séance, génère un programme… (Entrée)"
+              placeholder="Séance, nutrition, ressenti… (Entrée)"
               disabled={loading}
               rows={2}
               className="flex-1 bg-carbon border border-zinc text-chalk text-sm font-mono px-3 py-2 resize-none focus:outline-none focus:border-accent transition-colors placeholder-zinc disabled:opacity-50"
@@ -275,7 +287,7 @@ export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch,
               {loading ? <span className="w-4 h-4 border-2 border-carbon border-t-transparent rounded-full animate-spin" /> : '↑'}
             </button>
           </div>
-          <div className="text-zinc text-xs font-mono mt-1.5 text-center">Gemini 2.5 Flash · Historique sauvegardé par jour</div>
+          <div className="text-zinc text-xs font-mono mt-1.5 text-center">Historique sauvegardé par jour</div>
         </div>
       </div>
     </>

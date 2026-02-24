@@ -21,47 +21,55 @@ import { CustomDayPlan } from '@/types'
 
 type MainView = 'jour' | 'semaine' | 'progres' | 'coach' | 'admin'
 
-// ─── Day view — has access to useDayPlan and useDayState ─────────────────────
+// ─── Day view ─────────────────────────────────────────────────────────────────
 
 function DayView({ dateKey, selectedDate }: { dateKey: string; selectedDate: Date }) {
   const [dayTab, setDayTab] = useState<'sport' | 'nutrition' | 'bienetre'>('sport')
   const [editorOpen, setEditorOpen] = useState(false)
+  // Bump this to force NutritionPanel to reload its logs (after coach updates supplements)
+  const [nutritionRefreshKey, setNutritionRefreshKey] = useState(0)
 
   const {
     customPlan, isCustomized, loading, saving,
     defaultTemplate,
     effectiveItems, effectiveTitle, effectiveEmoji, effectiveType,
-    initCustomPlan, toggleItem, addItem, updateItem, removeItem, moveItem,
+    initCustomPlan, addItem, updateItem, removeItem, moveItem,
     updateMeta, resetToDefault, replacePlan, applyCoachPatch,
   } = useDayPlan(dateKey)
 
   const { state, applyPatch: applySessionPatch } = useDayState(dateKey)
 
-  const isClimbDay = effectiveType === 'climb' || effectiveItems.some(i => i.activity?.toLowerCase().includes('escalade') || i.activity?.toLowerCase().includes('climb'))
+  const isClimbDay = effectiveType === 'climb' || effectiveType === 'movement' ||
+    effectiveItems.some(i =>
+      i.activity?.toLowerCase().includes('escalade') ||
+      i.activity?.toLowerCase().includes('climb')
+    )
 
-  // When editor opens and no custom plan yet, init from template
   const handleOpenEditor = useCallback(() => {
     if (!isCustomized && !loading) initCustomPlan()
     setEditorOpen(true)
   }, [isCustomized, loading, initCustomPlan])
 
-  // Coach: apply patch (skip/modify existing items)
   const handleApplyPatch = useCallback((patch: any) => {
-    applyCoachPatch(patch)       // updates item skipped/coach_note in useDayPlan
-    applySessionPatch(patch)     // also updates useCheckState for legacy support
+    applyCoachPatch(patch)
+    applySessionPatch(patch)
     setDayTab('sport')
   }, [applyCoachPatch, applySessionPatch])
 
-  // Coach: replace entire day with generated plan
   const handleApplyGeneratedDay = useCallback((day: CustomDayPlan) => {
     replacePlan(day)
     setDayTab('sport')
   }, [replacePlan])
 
+  const handleSupplementsUpdated = useCallback(() => {
+    setNutritionRefreshKey(k => k + 1)
+    // Briefly flash to nutrition tab so user sees the update
+    setDayTab('nutrition')
+  }, [])
+
   return (
     <>
       <div className="space-y-5">
-        {/* Date header */}
         <div className="flex items-baseline gap-3">
           <div className="font-display text-5xl font-black tracking-tight text-chalk">
             {isToday(selectedDate) ? "AUJOURD'HUI" : format(selectedDate, 'EEEE', { locale: fr }).toUpperCase()}
@@ -69,7 +77,6 @@ function DayView({ dateKey, selectedDate }: { dateKey: string; selectedDate: Dat
           <div className="text-ash font-mono text-sm">{format(selectedDate, 'd MMMM yyyy', { locale: fr })}</div>
         </div>
 
-        {/* Sub-tabs */}
         <div className="flex border-b border-steel">
           {[
             { key: 'sport' as const,     label: '💪 Sport' },
@@ -95,11 +102,16 @@ function DayView({ dateKey, selectedDate }: { dateKey: string; selectedDate: Dat
             onOpenEditor={handleOpenEditor}
           />
         )}
-        {dayTab === 'nutrition' && <NutritionPanel dateKey={dateKey} isClimbDay={isClimbDay} />}
+        {dayTab === 'nutrition' && (
+          <NutritionPanel
+            key={nutritionRefreshKey}
+            dateKey={dateKey}
+            isClimbDay={isClimbDay}
+          />
+        )}
         {dayTab === 'bienetre' && <DailyWellbeing dateKey={dateKey} />}
       </div>
 
-      {/* Day editor panel */}
       <DayEditor
         open={editorOpen}
         onClose={() => setEditorOpen(false)}
@@ -117,27 +129,25 @@ function DayView({ dateKey, selectedDate }: { dateKey: string; selectedDate: Dat
         onInitCustomPlan={() => initCustomPlan()}
       />
 
-      {/* Floating coach */}
       <CoachChat
         dateKey={dateKey}
         currentDayPlan={{ title: effectiveTitle, type: effectiveType }}
         currentItems={effectiveItems}
         onApplyPatch={handleApplyPatch}
         onApplyGeneratedDay={handleApplyGeneratedDay}
+        onSupplementsUpdated={handleSupplementsUpdated}
       />
     </>
   )
 }
 
-// ─── Week strip mini cards ────────────────────────────────────────────────────
+// ─── Week strip ───────────────────────────────────────────────────────────────
 
 function WeekDayButton({ day, dayIndex, isSelected, onClick }: {
   day: Date; dayIndex: number; isSelected: boolean; onClick: () => void
 }) {
-  // Try to get custom plan emoji if exists — just use default template for strip
   const defaultPlan = weekPlan[dayIndex]
   const isTodayDay = isToday(day)
-
   return (
     <button onClick={onClick}
       className={`flex-1 flex flex-col items-center py-2 px-1 border transition-all ${isSelected ? 'border-accent bg-accent bg-opacity-10' : 'border-transparent hover:border-steel'}`}>
@@ -197,13 +207,14 @@ export function DashboardClient() {
                 </button>
               ))}
             </nav>
-            <button onClick={() => signOut({ callbackUrl: '/login' })} className="text-ash hover:text-crit transition-colors p-1.5" title="Déconnexion">
+            <button onClick={() => signOut({ callbackUrl: '/keeppushing/login' })} className="text-ash hover:text-crit transition-colors p-1.5" title="Déconnexion">
               <LogoutIcon />
             </button>
           </div>
         </div>
 
-        {(view === 'jour' || view === 'semaine') && (          <div className="max-w-5xl mx-auto px-4 pb-3">
+        {(view === 'jour' || view === 'semaine') && (
+          <div className="max-w-5xl mx-auto px-4 pb-3">
             <div className="flex gap-1 sm:gap-2">
               {weekDays.map((day, i) => (
                 <WeekDayButton key={i} day={day} dayIndex={i} isSelected={isSameDay(day, selectedDate)}
@@ -216,26 +227,28 @@ export function DashboardClient() {
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         {view === 'jour' && <DayView dateKey={dateKey} selectedDate={selectedDate} />}
-
         {view === 'semaine' && (
           <WeekOverview weekDays={weekDays} weekPlan={weekPlan}
             onSelectDay={d => { setSelectedDate(d); setView('jour') }} />
         )}
-
         {view === 'progres' && (
           <div className="space-y-6">
-            <div><div className="font-display text-5xl font-black tracking-tight text-chalk mb-1">PROGRÈS</div><div className="text-ash font-mono text-sm">Tes métriques dans le temps</div></div>
+            <div>
+              <div className="font-display text-5xl font-black tracking-tight text-chalk mb-1">PROGRÈS</div>
+              <div className="text-ash font-mono text-sm">Tes métriques dans le temps</div>
+            </div>
             <ProgressDashboard />
           </div>
         )}
-
         {view === 'coach' && (
           <div className="space-y-6">
-            <div><div className="font-display text-5xl font-black tracking-tight text-chalk mb-1">COACH IA</div><div className="text-ash font-mono text-sm">Bilan hebdomadaire par Gemini 2.5 Flash</div></div>
+            <div>
+              <div className="font-display text-5xl font-black tracking-tight text-chalk mb-1">COACH IA</div>
+              <div className="text-ash font-mono text-sm">Bilan hebdomadaire par Gemini</div>
+            </div>
             <AIReview />
           </div>
         )}
-
         {view === 'admin' && <AdminPanel />}
       </main>
     </div>

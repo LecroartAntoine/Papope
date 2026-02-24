@@ -3,8 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
 import { sql } from '@/lib/db'
 
-const DATE_TABLES = ['sessions','day_plans','nutrition_logs','wellbeing_logs','lift_logs','climb_logs','chat_history','body_metrics']
-const ALL_TABLES  = [...DATE_TABLES, 'activities', 'app_settings']
+const DATE_TABLES = ['sessions','day_plans','nutrition_logs','wellbeing_logs','lift_logs','climb_logs','chat_history','body_metrics','supplement_logs']
+const ALL_TABLES  = [...DATE_TABLES, 'activities', 'app_settings', 'supplements', 'supplement_logs']
 
 async function auth() {
   const session = await getServerSession(authOptions)
@@ -77,8 +77,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'run_migrations') {
-      const { runMigrations } = await import('@/lib/db')
+      const { runMigrations, runSupplementMigrations } = await import('@/lib/db')
       await runMigrations()
+      await runSupplementMigrations()
       return NextResponse.json({ ok: true })
     }
 
