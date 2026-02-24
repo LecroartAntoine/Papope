@@ -1,6 +1,6 @@
 export type DayKey = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
 
-// ─── Static default template types (kept for fallback) ────────────────────────
+// ─── Static default template types ───────────────────────────────────────────
 
 export interface Exercise {
   id: string
@@ -19,73 +19,61 @@ export interface DayPlan {
   label: string
   emoji: string
   color: string
-  type: 'strength' | 'climb' | 'recovery' | 'rest' | 'optional'
+  type: 'strength' | 'climb' | 'recovery' | 'rest' | 'optional' | 'movement'
   title: string
   subtitle: string
   duration?: string
   sections: WorkoutSection[]
 }
 
-// ─── Dynamic day items — the new flexible model ───────────────────────────────
+// ─── Activity system — broad categories, flexible activities ─────────────────
+//
+// CATEGORY = broad code-level bucket (4 values, never changes)
+// ACTIVITY  = specific named activity stored in DB, user/AI extensible
+//
+// This allows BeatSaber, Escalade, Randonnée, Yoga, etc. to all exist
+// without adding new TypeScript types. The AI uses a canonical list from
+// the DB to avoid naming the same thing twice.
 
-export type DayItemType = 'exercise' | 'climb' | 'hike' | 'cardio' | 'event' | 'rest'
+export type ActivityCategory = 'movement' | 'strength' | 'recovery' | 'event'
 
-export interface BaseItem {
-  id: string          // uuid generated client-side
-  type: DayItemType
+export const CATEGORY_META: Record<ActivityCategory, {
+  label: string
+  emoji: string
+  color: string
+  desc: string
+}> = {
+  movement:  { label: 'Mouvement',    emoji: '🏃', color: '#4EA8FF', desc: 'Cardio, sport, activité physique libre' },
+  strength:  { label: 'Force',        emoji: '💪', color: '#C8F135', desc: 'Musculation, exercices de résistance' },
+  recovery:  { label: 'Récupération', emoji: '🧘', color: '#A78BFA', desc: 'Mobilité, étirements, repos actif' },
+  event:     { label: 'Événement',    emoji: '📌', color: '#F5A623', desc: 'Compétition, blessure, voyage, repos' },
+}
+
+// ─── Unified DayItem — flat structure, all fields optional ───────────────────
+
+export interface DayItem {
+  id: string                    // short uid
+  category: ActivityCategory
+  activity: string              // canonical name e.g. "Escalade", "Beat Saber", "Squat"
+  label?: string                // optional display override
   checked?: boolean
-  skipped?: boolean   // skipped by coach
-  coach_note?: string // coach override note
-}
+  skipped?: boolean             // set by coach AI
+  coach_note?: string           // set by coach AI
 
-export interface ExerciseItem extends BaseItem {
-  type: 'exercise'
-  name: string
-  sets?: string
-  reps?: string
-  weight?: string     // e.g. "20kg" or "PC"
-  notes?: string
-}
+  // Strength fields
+  sets?: string                 // "3×8"
+  reps?: string                 // "8"
+  weight?: string               // "20kg" / "PC"
 
-export interface ClimbItem extends BaseItem {
-  type: 'climb'
-  label?: string      // e.g. "Séance escalade"
-  grade?: string
-  style?: string      // À vue, Flash, Redpoint…
-  completed?: boolean
-  notes?: string
-}
-
-export interface HikeItem extends BaseItem {
-  type: 'hike'
-  label?: string
+  // Movement / outdoor fields
+  duration_min?: number
   km?: number
   elevation_m?: number
-  duration_min?: number
-  notes?: string
-}
-
-export interface CardioItem extends BaseItem {
-  type: 'cardio'
-  activity: string    // "Rameur", "Course", "Vélo"…
-  duration_min?: number
   distance_km?: number
+
+  // Universal
   notes?: string
 }
-
-export interface EventItem extends BaseItem {
-  type: 'event'
-  label: string
-  notes?: string
-}
-
-export interface RestItem extends BaseItem {
-  type: 'rest'
-  label?: string
-  notes?: string
-}
-
-export type DayItem = ExerciseItem | ClimbItem | HikeItem | CardioItem | EventItem | RestItem
 
 // ─── Custom day plan stored in DB ────────────────────────────────────────────
 
@@ -93,9 +81,29 @@ export interface CustomDayPlan {
   date: string
   title: string
   emoji: string
-  type: DayItemType | 'mixed'
+  category: ActivityCategory | 'mixed'
   items: DayItem[]
-  notes?: string
+}
+
+// ─── Canonical activity registry (loaded from DB) ────────────────────────────
+
+export interface ActivityDef {
+  id: number
+  name: string                  // canonical casing e.g. "Beat Saber"
+  category: ActivityCategory
+  emoji: string
+  default_duration_min?: number
+  is_climbing?: boolean         // shows climb logger
+  is_outdoor?: boolean          // shows km/D+ fields
+  has_sets?: boolean            // shows sets/reps/weight fields
+  created_at: string
+}
+
+// ─── App settings ─────────────────────────────────────────────────────────────
+
+export interface AppSettings {
+  gemini_model: string
+  [key: string]: string
 }
 
 // ─── Nutrition & wellbeing ───────────────────────────────────────────────────

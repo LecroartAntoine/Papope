@@ -125,7 +125,7 @@ export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch,
           date: dateKey,
           message: userMsg,
           currentDayPlan: currentDayPlan ?? null,
-          currentItems: currentItems.map(i => ({ id: i.id, type: i.type, ...(i as any) })),
+          currentItems: currentItems,
         }),
       })
       const data = await res.json()

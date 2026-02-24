@@ -3,6 +3,7 @@ import { sql } from '@vercel/postgres'
 export { sql }
 
 export async function runMigrations() {
+  // Core session data
   await sql`
     CREATE TABLE IF NOT EXISTS sessions (
       id            SERIAL PRIMARY KEY,
@@ -101,5 +102,60 @@ export async function runMigrations() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
+  `
+
+  // Canonical activity registry — AI and users both reference this
+  await sql`
+    CREATE TABLE IF NOT EXISTS activities (
+      id                   SERIAL PRIMARY KEY,
+      name                 TEXT        NOT NULL UNIQUE,
+      category             TEXT        NOT NULL CHECK (category IN ('movement','strength','recovery','event')),
+      emoji                TEXT        NOT NULL DEFAULT '🏃',
+      default_duration_min INTEGER,
+      is_climbing          BOOLEAN     NOT NULL DEFAULT false,
+      is_outdoor           BOOLEAN     NOT NULL DEFAULT false,
+      has_sets             BOOLEAN     NOT NULL DEFAULT false,
+      created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+
+  // Seed canonical activities (INSERT OR IGNORE pattern)
+  await sql`
+    INSERT INTO activities (name, category, emoji, default_duration_min, is_climbing, is_outdoor, has_sets)
+    VALUES
+      ('Escalade',          'movement',  '🧗', 90,  true,  false, false),
+      ('Beat Saber',        'movement',  '🥊', 45,  false, false, false),
+      ('Randonnée',         'movement',  '🏔', 180, false, true,  false),
+      ('Course à pied',     'movement',  '🏃', 40,  false, true,  false),
+      ('Rameur',            'movement',  '🚣', 30,  false, false, false),
+      ('Vélo',              'movement',  '🚴', 60,  false, true,  false),
+      ('Natation',          'movement',  '🏊', 45,  false, false, false),
+      ('Marche',            'movement',  '🚶', 60,  false, true,  false),
+      ('Tractions',         'strength',  '💪', null,false, false, true),
+      ('Squat',             'strength',  '🏋', null,false, false, true),
+      ('Pompes',            'strength',  '💪', null,false, false, true),
+      ('Développé militaire','strength', '🏋', null,false, false, true),
+      ('Fentes bulgares',   'strength',  '🦵', null,false, false, true),
+      ('Gainage',           'strength',  '🧱', null,false, false, true),
+      ('Curls marteau',     'strength',  '💪', null,false, false, true),
+      ('Étirements',        'recovery',  '🧘', 15,  false, false, false),
+      ('Mobilité',          'recovery',  '🧘', 20,  false, false, false),
+      ('Repos complet',     'event',     '😴', null,false, false, false),
+      ('Compétition',       'event',     '🏆', null,false, false, false),
+      ('Voyage',            'event',     '✈',  null,false, false, false)
+    ON CONFLICT (name) DO NOTHING
+  `
+
+  // App settings key-value store
+  await sql`
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key        TEXT PRIMARY KEY,
+      value      TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+  await sql`
+    INSERT INTO app_settings (key, value) VALUES ('gemini_model', 'gemini-2.5-flash')
+    ON CONFLICT (key) DO NOTHING
   `
 }

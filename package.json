@@ -1,6 +1,6 @@
 {
-  "name": "sport-food-planner",
-  "version": "0.2.0",
+  "name": "papope",
+  "version": "0.7.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

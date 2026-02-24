@@ -24,8 +24,8 @@ export const weekPlan: DayPlan[] = [
           { id: 'mon-1', name: 'Tractions scapulaires', sets: '3×8' },
           { id: 'mon-2', name: 'Tractions contrôlées', sets: '3×5', notes: 'Garder 2 reps en réserve' },
           { id: 'mon-3', name: 'Pompes lentes', sets: '3×10–15' },
-          { id: 'mon-4', name: 'Curls marteau (haltère ou élastique)', sets: '3×12', notes: 'Excentrique lent 3 sec en descente' },
-          { id: 'mon-5', name: 'Curls poignet inversés', sets: '3×15', notes: 'Très important pour les tendons' },
+          { id: 'mon-4', name: 'Curls marteau', sets: '3×12', notes: 'Excentrique lent 3 sec' },
+          { id: 'mon-5', name: 'Curls poignet inversés', sets: '3×15', notes: 'Important pour les tendons' },
           { id: 'mon-6', name: 'Gainage — creux corporel ou planche', sets: '3 séries' },
         ],
       },
@@ -45,7 +45,7 @@ export const weekPlan: DayPlan[] = [
         exercises: [
           { id: 'tue-1', name: '8 min rameur échauffement' },
           { id: 'tue-2', name: '10 min traversées faciles' },
-          { id: 'tue-3', name: '4–6 voies à 70–75% d\'effort' },
+          { id: 'tue-3', name: '4–6 voies à 70–75% effort' },
         ],
       },
       {
@@ -61,25 +61,18 @@ export const weekPlan: DayPlan[] = [
   {
     key: 'wednesday',
     label: 'Mercredi',
-    emoji: '🟡',
-    color: 'warn',
-    type: 'recovery',
-    title: 'Récupération Active',
-    subtitle: 'Mobilité + cardio léger',
+    emoji: '🥊',
+    color: 'info',
+    type: 'movement',
+    title: 'Beat Saber',
+    subtitle: '45 min — Cardio VR, bonne suée !',
+    duration: '45 min',
     sections: [
       {
-        title: 'Cardio (au choix)',
+        title: 'Session VR',
         exercises: [
-          { id: 'wed-1', name: '20–30 min rameur Zone 2' },
-          { id: 'wed-2', name: 'Repos complet si très fatigué' },
-        ],
-      },
-      {
-        title: 'Mobilité 10 min',
-        exercises: [
-          { id: 'wed-3', name: 'Étirements avant-bras' },
-          { id: 'wed-4', name: 'Étirement biceps' },
-          { id: 'wed-5', name: 'Rotation thoracique' },
+          { id: 'wed-bs-1', name: 'Beat Saber — 45 min', notes: 'Expert ou Expert+ selon la forme' },
+          { id: 'wed-bs-2', name: 'Étirements bras après', notes: '5 min — avant-bras et épaules' },
         ],
       },
     ],
@@ -103,7 +96,7 @@ export const weekPlan: DayPlan[] = [
         title: 'Travail principal',
         exercises: [
           { id: 'thu-1', name: 'Tractions', sets: '4×5' },
-          { id: 'thu-2', name: 'Développé militaire (haltères ou barre)', sets: '3×8' },
+          { id: 'thu-2', name: 'Développé militaire', sets: '3×8' },
           { id: 'thu-3', name: 'Fentes bulgares', sets: '3×8/jambe' },
           { id: 'thu-4', name: 'Relevés de jambes suspendu', sets: '3×10' },
           { id: 'thu-5', name: 'Curls poignet excentriques', sets: '3×15' },
@@ -126,7 +119,7 @@ export const weekPlan: DayPlan[] = [
           { id: 'fri-1', name: 'Échauffement complet' },
           { id: 'fri-2', name: '2 voies faciles' },
           { id: 'fri-3', name: '2 voies modérées' },
-          { id: 'fri-4', name: '2–3 voies à la limite', notes: '3–4 min de repos entre chaque' },
+          { id: 'fri-4', name: '2–3 voies à la limite', notes: '3–4 min repos entre chaque' },
         ],
       },
     ],
@@ -134,17 +127,23 @@ export const weekPlan: DayPlan[] = [
   {
     key: 'saturday',
     label: 'Samedi',
-    emoji: '🟢',
-    color: 'accent',
-    type: 'optional',
-    title: 'Rando optionnelle ou Repos',
-    subtitle: 'Cardio léger — plaisir, pas une épreuve',
+    emoji: '🥊',
+    color: 'warn',
+    type: 'movement',
+    title: 'Beat Saber ou Rando',
+    subtitle: 'Cardio plaisir — au choix selon météo et forme',
     sections: [
       {
-        title: 'Si rando',
+        title: 'Option A — VR',
         exercises: [
-          { id: 'sat-1', name: 'Marche à allure confortable' },
-          { id: 'sat-2', name: 'Rester en Zone 2 (pouvoir parler)' },
+          { id: 'sat-bs-1', name: 'Beat Saber — 30–60 min' },
+        ],
+      },
+      {
+        title: 'Option B — Extérieur',
+        exercises: [
+          { id: 'sat-rando-1', name: 'Randonnée ou marche' },
+          { id: 'sat-rando-2', name: 'Zone 2 — pouvoir parler' },
         ],
       },
     ],
@@ -161,7 +160,7 @@ export const weekPlan: DayPlan[] = [
       {
         title: 'Récupération',
         exercises: [
-          { id: 'sun-1', name: 'Atteindre l\'objectif protéines' },
+          { id: 'sun-1', name: 'Atteindre objectif protéines' },
           { id: 'sun-2', name: 'Dormir 7–9h' },
           { id: 'sun-3', name: 'Balade légère si envie' },
         ],
@@ -170,7 +169,6 @@ export const weekPlan: DayPlan[] = [
   },
 ]
 
-// Daily nutrition targets
 export const nutritionTargets = {
   proteines_g: 150,
   collagene_g: 15,

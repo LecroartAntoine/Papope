@@ -37,7 +37,7 @@ function DayView({ dateKey, selectedDate }: { dateKey: string; selectedDate: Dat
 
   const { state, applyPatch: applySessionPatch } = useDayState(dateKey)
 
-  const isClimbDay = effectiveType === 'climb' || effectiveItems.some(i => i.type === 'climb')
+  const isClimbDay = effectiveType === 'climb' || effectiveItems.some(i => i.activity?.toLowerCase().includes('escalade') || i.activity?.toLowerCase().includes('climb'))
 
   // When editor opens and no custom plan yet, init from template
   const handleOpenEditor = useCallback(() => {

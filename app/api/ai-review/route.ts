@@ -3,6 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
 import { sql } from '@/lib/db'
 
+
+async function getGeminiModel(): Promise<string> {
+  const { sql: dbSql } = await import("@/lib/db")
+  try {
+    const { rows } = await dbSql`SELECT value FROM app_settings WHERE key = 'gemini_model'`
+    return rows[0]?.value ?? 'gemini-2.5-flash-preview-04-17'
+  } catch { return 'gemini-2.5-flash-preview-04-17' }
+}
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
@@ -48,15 +56,15 @@ export async function POST(req: NextRequest) {
     if (!apiKey) throw new Error('GEMINI_API_KEY manquant dans les variables d\'environnement')
 
     const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${await getGeminiModel()}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 1024,
+            temperature: 1,
+            maxOutputTokens: 4096,
           },
         }),
       }
