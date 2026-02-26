@@ -21,27 +21,6 @@ const TABLE_META: Record<string, { label: string; emoji: string; desc: string; c
   supplement_logs:{ label: 'Logs nutrition',        emoji: '🧪', desc: 'Valeurs quotidiennes suppléments',        color: '#64D8FF' },
 }
 
-// Free Gemini models with quota info
-const GEMINI_MODELS = [
-  {
-    id: 'gemini-2.5-flash',
-    name: 'Gemini 2.5 Flash',
-    badge: 'RECOMMANDÉ',
-    badgeColor: '#C8F135',
-    desc: 'Meilleur rapport qualité/vitesse. Raisonnement adaptatif.',
-    quota: '500 req/jour · 1M tokens/min',
-    tier: 'Gratuit',
-  },
-  {
-    id: 'gemini-2.5-flash-lite',
-    name: 'Gemini 2.5 Flash Lite',
-    badge: 'RECOMMANDÉ',
-    badgeColor: '#C8F135',
-    desc: 'Meilleur rapport qualité/vitesse. Raisonnement adaptatif.',
-    quota: '500 req/jour · 1M tokens/min',
-    tier: 'Gratuit',
-  }
-]
 
 function fmtDate(d: string | null) {
   if (!d) return '—'
@@ -166,8 +145,6 @@ function ActivitiesManager() {
 export function AdminPanel() {
   const [stats, setStats] = useState<TableStat[]>([])
   const [statsLoading, setStatsLoading] = useState(true)
-  const [currentModel, setCurrentModel] = useState('gemini-2.5-flash')
-  const [savingModel, setSavingModel] = useState(false)
 
   const today = new Date()
   const oneMonthAgo = new Date(today); oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
@@ -178,7 +155,7 @@ export function AdminPanel() {
   const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void; danger?: boolean } | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [migrating, setMigrating] = useState(false)
-  const [adminTab, setAdminTab] = useState<'data' | 'model' | 'activities'>('data')
+  const [adminTab, setAdminTab] = useState<'data' | 'activities'>('data')
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type })
@@ -188,34 +165,15 @@ export function AdminPanel() {
   const loadStats = useCallback(async () => {
     setStatsLoading(true)
     try {
-      const [statsRes, settingsRes] = await Promise.all([
-        fetch('/api/admin?action=stats'),
-        fetch('/api/settings'),
-      ])
-      const statsData = await statsRes.json()
-      const settingsData = await settingsRes.json()
-      if (Array.isArray(statsData)) setStats(statsData)
-      if (settingsData.gemini_model) setCurrentModel(settingsData.gemini_model)
+      const res = await fetch('/api/admin?action=stats')
+      const data = await res.json()
+      if (Array.isArray(data)) setStats(data)
     } catch { showToast('Impossible de charger', 'error') }
     setStatsLoading(false)
   }, [showToast])
 
   useEffect(() => { loadStats() }, [loadStats])
 
-  const handleSaveModel = async (modelId: string) => {
-    setSavingModel(true)
-    try {
-      const res = await fetch('/api/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gemini_model: modelId }),
-      })
-      if (!res.ok) throw new Error('Erreur')
-      setCurrentModel(modelId)
-      showToast(`Modèle mis à jour : ${modelId}`, 'success')
-    } catch { showToast('Erreur lors de la sauvegarde', 'error') }
-    setSavingModel(false)
-  }
 
   const handleDeleteRange = () => {
     if (selectedTables.size === 0) { showToast('Sélectionne au moins une table', 'error'); return }
@@ -291,7 +249,6 @@ export function AdminPanel() {
 
   const tabs = [
     { key: 'data' as const,       label: '🗄 Données' },
-    { key: 'model' as const,      label: '🤖 Modèle IA' },
     { key: 'activities' as const, label: '🏃 Activités' },
   ]
 
@@ -428,50 +385,6 @@ export function AdminPanel() {
               </div>
             </div>
           </Section>
-        </div>
-      )}
-
-      {/* ── TAB: GEMINI MODEL ── */}
-      {adminTab === 'model' && (
-        <div className="space-y-4">
-          <div className="border border-steel bg-slate p-4 text-xs font-mono text-ash space-y-1">
-            <div className="text-chalk font-bold mb-2">ℹ Modèles disponibles (tous gratuits)</div>
-            <div>• Quota partagé entre Coach IA et Bilan hebdomadaire</div>
-            <div>• Aucune carte bancaire requise — clé API Google AI Studio</div>
-            <div>• Gemini 2.5 Flash recommandé : meilleur raisonnement, même quota</div>
-          </div>
-
-          {GEMINI_MODELS.map(model => {
-            const isSelected = currentModel === model.id
-            return (
-              <div key={model.id}
-                className={`border p-5 transition-all cursor-pointer ${isSelected ? 'border-accent bg-accent bg-opacity-5' : 'border-steel bg-slate hover:border-ghost'}`}
-                onClick={() => !savingModel && handleSaveModel(model.id)}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-chalk font-mono font-bold text-sm">{model.name}</span>
-                      <span className="text-xs font-mono font-bold px-2 py-0.5" style={{ background: `${model.badgeColor}20`, color: model.badgeColor }}>
-                        {model.badge}
-                      </span>
-                      <span className="text-xs font-mono text-accent border border-accent border-opacity-30 px-1.5 py-0.5">{model.tier}</span>
-                    </div>
-                    <div className="text-ash text-xs font-mono mb-2">{model.desc}</div>
-                    <div className="text-zinc text-xs font-mono">📊 {model.quota}</div>
-                    <div className="text-zinc text-xs font-mono mt-1 opacity-60">{model.id}</div>
-                  </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 ${isSelected ? 'border-accent bg-accent' : 'border-zinc'}`}>
-                    {isSelected && <div className="w-2 h-2 bg-carbon rounded-full" />}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-
-          {savingModel && (
-            <div className="text-center text-xs font-mono text-ash animate-pulse">Sauvegarde du modèle…</div>
-          )}
         </div>
       )}
 

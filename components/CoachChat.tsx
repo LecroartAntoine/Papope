@@ -1,121 +1,63 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { DayItem, CustomDayPlan } from '@/types'
+import { DayItem } from '@/types'
 
-interface Patch {
-  skip?: string[]
-  modify?: Record<string, { sets?: string; reps?: string; note?: string }>
-  session_note?: string
-}
-
-interface SupplementPatch {
-  entries: { supplement_id: number; value: number }[]
-  note?: string
+interface Props {
+  dateKey: string
+  currentItems: DayItem[]
+  isClimbDay: boolean
+  onRefreshDay: () => void
+  onSupplementsUpdated: () => void
 }
 
 interface ChatMessage {
   id: number
   role: 'user' | 'coach'
   content: string
-  patch?: Patch | null
-  generatedDay?: CustomDayPlan | null
-  supplementPatch?: SupplementPatch | null
+  actions?: {
+    weekPatch?: boolean
+    dayPatch?: boolean
+    supplementPatch?: boolean
+    supplementUpdates?: boolean
+  }
 }
 
-interface Props {
-  dateKey: string
-  currentDayPlan: { title: string; type: string } | undefined
-  currentItems: DayItem[]
-  onApplyPatch: (patch: Patch) => void
-  onApplyGeneratedDay: (day: CustomDayPlan) => void
-  onSupplementsUpdated?: () => void
-}
-
-// ─── Action badge ─────────────────────────────────────────────────────────────
-
-function ActionBadge({ msg, applied, onApply }: {
-  msg: ChatMessage
-  applied: boolean
-  onApply: () => void
-}) {
-  const hasPatch = msg.patch && (msg.patch.skip?.length || Object.keys(msg.patch.modify ?? {}).length)
-  const hasDay = !!msg.generatedDay
-  const hasSupp = msg.supplementPatch && msg.supplementPatch.entries?.length > 0
-
-  if (!hasPatch && !hasDay && !hasSupp) return null
-
-  const actionLabel = (() => {
-    if (hasDay) return '🤖 Nouvelle séance générée'
-    if (hasPatch && hasSupp) return '⚡ Séance + nutrition adaptées'
-    if (hasPatch) return '⚡ Adaptation séance proposée'
-    if (hasSupp) return '🥗 Mise à jour nutrition'
-    return '⚡ Action proposée'
-  })()
-
+function ActionChip({ icon, label, color }: { icon: string; label: string; color: string }) {
   return (
-    <div className={`mt-2 border p-2.5 text-xs font-mono transition-all ${
-      applied
-        ? 'border-accent border-opacity-40 bg-accent bg-opacity-5'
-        : 'border-info border-opacity-40 bg-info bg-opacity-5'
-    }`}>
-      <div className="flex items-center justify-between gap-2 mb-1.5">
-        <span className={`uppercase tracking-wider ${applied ? 'text-accent' : 'text-info'}`}>
-          {applied ? '✓ Appliqué' : actionLabel}
-        </span>
-        {!applied && (
-          <button onClick={onApply} className="bg-accent text-carbon text-xs font-bold px-3 py-1 uppercase tracking-wider hover:bg-opacity-90 transition-all flex-shrink-0">
-            Appliquer
-          </button>
-        )}
-      </div>
-
-      {hasDay && msg.generatedDay && (
-        <div className="text-chalk">
-          <span className="mr-1">{msg.generatedDay.emoji}</span>
-          {msg.generatedDay.title} · {msg.generatedDay.items?.length ?? 0} items
-        </div>
-      )}
-      {hasPatch && msg.patch && (
-        <>
-          {(msg.patch.skip?.length ?? 0) > 0 && <div className="text-crit">→ {msg.patch.skip!.length} supprimé{msg.patch.skip!.length > 1 ? 's' : ''}</div>}
-          {Object.keys(msg.patch.modify ?? {}).length > 0 && <div className="text-warn">→ {Object.keys(msg.patch.modify!).length} allégé{Object.keys(msg.patch.modify!).length > 1 ? 's' : ''}</div>}
-          {msg.patch.session_note && <div className="text-ghost italic mt-1">"{msg.patch.session_note}"</div>}
-        </>
-      )}
-      {hasSupp && msg.supplementPatch && (
-        <div className="text-accent mt-1">
-          🥗 {msg.supplementPatch.entries.length} supplément{msg.supplementPatch.entries.length > 1 ? 's' : ''} mis à jour
-          {msg.supplementPatch.note && <span className="text-ghost"> · {msg.supplementPatch.note}</span>}
-        </div>
-      )}
-    </div>
+    <span className="inline-flex items-center gap-1 text-xs font-mono px-2 py-0.5 border"
+      style={{ borderColor: `${color}50`, color, background: `${color}10` }}>
+      {icon} {label}
+    </span>
   )
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
-
-export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch, onApplyGeneratedDay, onSupplementsUpdated }: Props) {
+export function CoachChat({ dateKey, currentItems, isClimbDay, onRefreshDay, onSupplementsUpdated }: Props) {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
-  const [appliedIds, setAppliedIds] = useState<Set<number>>(new Set())
   const [hasUnread, setHasUnread] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
+  // Load history
   useEffect(() => {
     setMessages([])
     setHistoryLoaded(false)
-    setAppliedIds(new Set())
     fetch(`/api/coach?date=${dateKey}`)
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) {
-          setMessages(data)
-          if (data.length > 0 && !open) setHasUnread(true)
+          const msgs: ChatMessage[] = data.map(m => ({
+            id: m.id,
+            role: m.role,
+            content: m.content,
+            actions: m.patch ? m.patch : undefined,
+          }))
+          setMessages(msgs)
+          if (msgs.length > 0 && !open) setHasUnread(true)
         }
       })
       .catch(() => {})
@@ -135,7 +77,8 @@ export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch,
     const userMsg = input.trim()
     setInput('')
     setLoading(true)
-    setMessages(prev => [...prev, { id: Date.now(), role: 'user', content: userMsg }])
+    const tempId = Date.now()
+    setMessages(prev => [...prev, { id: tempId, role: 'user', content: userMsg }])
 
     try {
       const res = await fetch('/api/coach', {
@@ -144,125 +87,158 @@ export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch,
         body: JSON.stringify({
           date: dateKey,
           message: userMsg,
-          currentDayPlan: currentDayPlan ?? null,
           currentItems,
+          isClimbDay,
         }),
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
 
-      // If supplements were updated server-side, trigger a refresh in parent
-      if (data.supplementPatch?.entries?.length) {
-        onSupplementsUpdated?.()
+      // Build actions summary for the message badge
+      const actions = {
+        weekPatch: !!(data.weekPatch && data.weekPatch.length > 0),
+        dayPatch: !!data.dayPatch,
+        supplementPatch: !!(data.supplementPatch?.entries?.length),
+        supplementUpdates: !!(data.supplementUpdates?.length),
       }
+
+      // Refresh UI based on what changed
+      if (actions.weekPatch || actions.dayPatch) onRefreshDay()
+      if (actions.supplementPatch || actions.supplementUpdates) onSupplementsUpdated()
 
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         role: 'coach',
-        content: data.message,
-        patch: data.patch ?? null,
-        generatedDay: data.generatedDay ?? null,
-        supplementPatch: data.supplementPatch ?? null,
+        content: data.message || '…',
+        actions: Object.values(actions).some(Boolean) ? actions : undefined,
       }])
     } catch (err: any) {
-      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'coach', content: `Erreur : ${err.message}` }])
+      setMessages(prev => [...prev, { id: Date.now() + 2, role: 'coach', content: `Erreur : ${err.message}` }])
     }
     setLoading(false)
-  }, [input, loading, dateKey, currentDayPlan, currentItems, onSupplementsUpdated])
+  }, [input, loading, dateKey, currentItems, isClimbDay, onRefreshDay, onSupplementsUpdated])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
 
-  const applyMessage = useCallback((msg: ChatMessage) => {
-    if (msg.generatedDay) onApplyGeneratedDay(msg.generatedDay)
-    if (msg.patch) onApplyPatch(msg.patch)
-    // supplement_patch is already applied server-side, just trigger a UI refresh
-    if (msg.supplementPatch?.entries?.length) onSupplementsUpdated?.()
-    setAppliedIds(prev => new Set([...prev, msg.id]))
-  }, [onApplyPatch, onApplyGeneratedDay, onSupplementsUpdated])
-
-  const quickMessages = [
-    "J'ai pris mes compléments ce matin",
-    "Je ne me sens pas bien aujourd'hui",
-    'Mes bras me font mal',
-    'Je suis très fatigué',
-    'Génère-moi une séance jambes',
-    'Je veux faire une rando',
-    'Séance cardio plutôt',
-    'Séance courte, 20 min max',
+  const suggestions = [
+    "Cette semaine je veux de l'escalade mardi et vendredi, 2 séance de Beat Saber et 2 séances de marche longue.",
+    'Mes bras font très mal aujourd\'hui',
+    "Génère une séance force pour aujourd'hui",
+    'Quelle intensité pour la semaine vu ma fatigue ?',
   ]
 
   return (
     <>
+      {/* Floating button */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-accent text-carbon rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-all active:scale-95"
-        title="Coach IA"
+        className="fixed bottom-6 right-6 z-50 max-w-14 max-h-14 overflow-hidden bg-black text-carbon rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-all active:scale-95"
+        aria-label="Coach IA"
       >
-        <span className="text-2xl">🤖</span>
+
+        <img
+          className="rounded-full h-14 w-14"
+          src="/oh.png"
+          alt="Geifni"
+        />
         {hasUnread && <span className="absolute top-0 right-0 w-4 h-4 bg-crit rounded-full border-2 border-carbon" />}
       </button>
 
+      {/* Backdrop */}
       {open && <div className="fixed inset-0 z-40 bg-carbon bg-opacity-60 backdrop-blur-sm" onClick={() => setOpen(false)} />}
 
-      <div className={`fixed bottom-0 right-0 z-50 w-full sm:w-[440px] h-[88vh] sm:h-[640px] sm:bottom-6 sm:right-6 bg-carbon border border-steel flex flex-col transition-all duration-300 ${open ? 'translate-y-0 opacity-100' : 'translate-y-full sm:translate-y-8 opacity-0 pointer-events-none'}`}
-        style={{ boxShadow: '0 0 60px rgba(0,0,0,0.7)' }}>
-
+      {/* Panel */}
+      <div
+        className={`fixed bottom-0 right-0 z-50 w-full sm:w-[460px] h-[90vh] sm:h-[680px] sm:bottom-6 sm:right-6 bg-carbon border border-steel flex flex-col transition-all duration-300 ${
+          open ? 'translate-y-0 opacity-100' : 'translate-y-full sm:translate-y-8 opacity-0 pointer-events-none'
+        }`}
+        style={{ boxShadow: '0 0 80px rgba(0,0,0,0.8)' }}
+      >
+        {/* Header */}
         <div className="px-4 py-3 border-b border-steel flex items-center justify-between flex-shrink-0 bg-slate">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-accent rounded-full flex items-center justify-center text-lg flex-shrink-0">🤖</div>
+            <div className="w-9 h-9 bg-black rounded-full flex items-center justify-center text-xl flex-shrink-0">
+              <img
+                className="object-fit object-center rounded-full h-8 w-8"
+                src="/oh.png"
+                alt="Gefini"
+              />
+            </div>
             <div>
-              <div className="text-chalk text-sm font-mono font-bold">Coach IA</div>
-              <div className="text-ash text-xs font-mono">{currentDayPlan?.title ?? 'Séance du jour'} · Sport + Nutrition</div>
+              <div className="text-chalk text-sm font-mono font-bold">Denis</div>
             </div>
           </div>
-          <button onClick={() => setOpen(false)} className="text-ash hover:text-chalk text-lg w-8 h-8 flex items-center justify-center">✕</button>
+          <button onClick={() => setOpen(false)} className="text-ash hover:text-chalk w-8 h-8 flex items-center justify-center text-lg">✕</button>
         </div>
 
+        {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {historyLoaded && messages.length === 0 && (
-            <div className="text-center py-6">
-              <div className="text-4xl mb-3">🤖</div>
-              <div className="text-chalk text-sm font-mono mb-1">Coach sport & nutrition</div>
-              <div className="text-ash text-xs font-mono">Parle-moi de ta séance, de ce que t'as mangé, de comment tu te sens…</div>
+            <div className="text-center py-10">
+              <div className="text-chalk text-sm font-mono font-bold mb-2">Ton tortionnaire</div>
+              <div className="text-ash text-xs font-mono leading-relaxed max-w-xs mx-auto">
+                Good Day le monsieur, fait péter le tier gratuit !
+              </div>
             </div>
           )}
+
           {!historyLoaded && (
-            <div className="space-y-3">
-              {[1,2,3].map(i => <div key={i} className={`flex ${i%2===0?'justify-start':'justify-end'}`}><div className="h-12 w-48 bg-steel animate-pulse rounded" /></div>)}
+            <div className="space-y-3 pt-2">
+              {[1,2,3].map(i => (
+                <div key={i} className={`flex ${i%2===0?'justify-start':'justify-end'}`}>
+                  <div className="h-14 w-52 bg-steel animate-pulse" />
+                </div>
+              ))}
             </div>
           )}
+
           {messages.map((msg, idx) => (
             <div key={msg.id ?? idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[88%] flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                <div className={`text-xs font-mono mb-1 ${msg.role === 'user' ? 'text-ash text-right' : 'text-accent'}`}>
-                  {msg.role === 'user' ? 'Toi' : '🤖 Coach'}
+              <div className={`max-w-[90%] flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                <div className={`text-xs font-mono mb-1 ${msg.role === 'user' ? 'text-ash' : 'text-accent'}`}>
+                  {msg.role === 'user' ? 'Moi' : 'Denis'}
                 </div>
-                <div className={`px-3 py-2.5 text-sm font-mono leading-relaxed ${msg.role === 'user' ? 'bg-accent text-carbon' : 'bg-slate border border-steel text-chalk'}`}>
+                <div className={`px-3 py-2.5 text-sm font-mono leading-relaxed whitespace-pre-wrap ${
+                  msg.role === 'user' ? 'bg-accent text-carbon' : 'bg-slate border border-steel text-chalk'
+                }`}>
                   {msg.content}
                 </div>
-                <ActionBadge msg={msg} applied={appliedIds.has(msg.id)} onApply={() => applyMessage(msg)} />
+                {/* Action chips */}
+                {msg.actions && (
+                  <div className="mt-1.5 flex flex-wrap gap-1">
+                    {msg.actions.weekPatch && <ActionChip icon="📅" label="Semaine planifiée" color="#4EA8FF" />}
+                    {msg.actions.dayPatch && <ActionChip icon="✏️" label="Jour modifié" color="#F5A623" />}
+                    {msg.actions.supplementPatch && <ActionChip icon="🥗" label="Nutrition loggée" color="#C8F135" />}
+                    {msg.actions.supplementUpdates && <ActionChip icon="⚙️" label="Suppléments mis à jour" color="#A78BFA" />}
+                  </div>
+                )}
               </div>
             </div>
           ))}
+
           {loading && (
             <div className="flex justify-start">
-              <div className="bg-slate border border-steel px-4 py-3 flex items-center gap-1.5">
-                {[0,150,300].map(d => <span key={d} className="w-2 h-2 bg-ash rounded-full animate-bounce" style={{ animationDelay: `${d}ms` }} />)}
+              <div className="bg-slate border border-steel px-4 py-3.5 flex items-center gap-1.5">
+                {[0,150,300].map(d => (
+                  <span key={d} className="w-2 h-2 bg-ash rounded-full animate-bounce" style={{ animationDelay: `${d}ms` }} />
+                ))}
               </div>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Suggestions */}
         {historyLoaded && messages.length === 0 && !loading && (
           <div className="px-4 pb-2 flex-shrink-0">
-            <div className="text-xs text-ash font-mono mb-2 uppercase tracking-wider">Suggestions</div>
+            <div className="text-xs text-ash font-mono mb-2 uppercase tracking-wider">Par exemple…</div>
             <div className="flex flex-wrap gap-1.5">
-              {quickMessages.map((q, i) => (
-                <button key={i} onClick={() => { setInput(q); inputRef.current?.focus() }}
-                  className="text-xs font-mono text-ghost border border-zinc px-2 py-1 hover:border-accent hover:text-accent transition-all">
+              {suggestions.map((q, i) => (
+                <button key={i}
+                  onClick={() => { setInput(q); inputRef.current?.focus() }}
+                  className="text-xs font-mono text-ghost border border-zinc px-2 py-1 hover:border-accent hover:text-accent transition-all text-left leading-snug">
                   {q}
                 </button>
               ))}
@@ -270,6 +246,7 @@ export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch,
           </div>
         )}
 
+        {/* Input */}
         <div className="p-3 border-t border-steel flex-shrink-0 bg-slate">
           <div className="flex gap-2 items-end">
             <textarea
@@ -277,17 +254,19 @@ export function CoachChat({ dateKey, currentDayPlan, currentItems, onApplyPatch,
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Séance, nutrition, ressenti… (Entrée)"
+              placeholder="Planifie, modifie, demande un conseil… (Entrée pour envoyer)"
               disabled={loading}
               rows={2}
               className="flex-1 bg-carbon border border-zinc text-chalk text-sm font-mono px-3 py-2 resize-none focus:outline-none focus:border-accent transition-colors placeholder-zinc disabled:opacity-50"
             />
             <button onClick={send} disabled={loading || !input.trim()}
               className="bg-accent text-carbon w-10 h-10 flex items-center justify-center hover:bg-opacity-90 transition-all disabled:opacity-40 text-lg flex-shrink-0">
-              {loading ? <span className="w-4 h-4 border-2 border-carbon border-t-transparent rounded-full animate-spin" /> : '↑'}
+              {loading
+                ? <span className="w-4 h-4 border-2 border-carbon border-t-transparent rounded-full animate-spin" />
+                : '↑'}
             </button>
           </div>
-          <div className="text-zinc text-xs font-mono mt-1.5 text-center">Historique sauvegardé par jour</div>
+          <div className="text-zinc text-xs font-mono mt-1.5 text-center">Gefini</div>
         </div>
       </div>
     </>

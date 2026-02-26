@@ -382,14 +382,6 @@ export function NutritionPanel({ dateKey, isClimbDay }: Props) {
         </div>
       </div>
 
-      {/* Rules */}
-      <div className="border border-crit border-opacity-30 bg-crit bg-opacity-5 p-4 text-xs font-mono space-y-1.5">
-        <div className="text-crit tracking-wider uppercase mb-2">⚠ Règles clés</div>
-        <div className="text-ghost">• Pas de campus board avant 6–9 mois</div>
-        <div className="text-ghost">• Pas d'entraînement max des doigts</div>
-        <div className="text-ghost">• Douleur ≥4/10 à l'escalade → arrêter</div>
-        <div className="text-ghost">• Décharge toutes les 4 semaines (−30%)</div>
-      </div>
     </div>
   )
 }

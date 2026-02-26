@@ -155,7 +155,7 @@ export async function runMigrations() {
     )
   `
   await sql`
-    INSERT INTO app_settings (key, value) VALUES ('gemini_model', 'gemini-2.5-flash')
+    INSERT INTO app_settings (key, value) VALUES ('gemini_model', 'gemini-2.5-flash-preview-04-17')
     ON CONFLICT (key) DO NOTHING
   `
 }

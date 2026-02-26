@@ -10,6 +10,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
+      <head>
+        <meta name="apple-mobile-web-app-title" content="Papope" />
+      </head>
       <body>
         <Providers>{children}</Providers>
       </body>
