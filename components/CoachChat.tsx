@@ -143,7 +143,6 @@ export function CoachChat({ dateKey, currentItems, isClimbDay, onRefreshDay, onS
           src="/oh.png"
           alt="Geifni"
         />
-        {hasUnread && <span className="absolute top-0 right-0 w-4 h-4 bg-crit rounded-full border-2 border-carbon" />}
       </button>
 
       {/* Backdrop */}
