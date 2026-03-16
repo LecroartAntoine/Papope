@@ -24,9 +24,8 @@ const FLOATING_THINGS = [
 ]
 
 const LINKS = [
-  { href: '#', label: 'jeux inutiles', emoji: '🎮', desc: 'bientôt™', disabled: true },
-  { href: '#', label: 'pensées aléatoires', emoji: '💭', desc: 'probablement pas', disabled: true },
-  { href: '#', label: 'trucs & machins', emoji: '🔧', desc: 'en construction permanente', disabled: true },
+  { href: '/games', label: 'jeux inutiles', emoji: '🎮', desc: 'divertissement de faible paroxysme ', disabled: false },
+  { href: '/oracle', label: "l'oracle existentiel", emoji: '🔮', desc: 'Deep Thought II · Navigation existentielle · En Partie inoffensif', disabled: false },
 ]
 
 export default function PapopePage() {
@@ -202,17 +201,25 @@ export default function PapopePage() {
         }
 
         .link-card {
-          background: #111;
-          border: 1px solid #333; /* BRIGHTENED BORDER */
-          padding: 18px 20px;
-          cursor: not-allowed;
-          opacity: 0.65; /* BRIGHTENED from 0.4 */
-          transition: all 0.15s;
-          position: relative;
-          overflow: hidden;
-        }
+        background: #111;
+        border: 1px solid #333; /* BRIGHTENED BORDER */
+        padding: 18px 20px;
+        transition: all 0.15s;
+        position: relative;
+        overflow: hidden;
+          }
 
-        .link-card::before {
+        .link-card.disabled {
+          cursor: not-allowed;
+        opacity: 0.65; /* BRIGHTENED from 0.4 */
+          }
+
+        .link-card:not(.disabled):hover {
+          border - color: #666;
+        transform: translateY(-2px);
+          }
+
+        .link-card.disabled::before {
           content: 'SOON';
           position: absolute;
           top: 6px; right: 8px;
@@ -388,9 +395,10 @@ export default function PapopePage() {
           </div>
 
           {/* Link cards */}
+          
           <div style={{ display: 'grid', gap: 8 }}>
-            {LINKS.map((link, i) => (
-              <div key={i} className="link-card">
+            {LINKS.map((link, i) => {
+              const inner = (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span style={{ fontSize: 20, opacity: 0.8 }}>{link.emoji}</span>
                   <div>
@@ -399,8 +407,17 @@ export default function PapopePage() {
                     <div style={{ fontSize: 12, color: '#888', marginTop: 2, fontFamily: 'VT323, monospace', letterSpacing: '0.08em' }}>{link.desc}</div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+              return link.disabled ? (
+                <div key={i} className="link-card disabled">
+                  {inner}
+                </div>
+              ) : (
+                <Link key={i} href={link.href} className="link-card" style={{ textDecoration: 'none' }}>
+                  {inner}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Badges row */}

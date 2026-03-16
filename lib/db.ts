@@ -158,6 +158,16 @@ export async function runMigrations() {
     INSERT INTO app_settings (key, value) VALUES ('gemini_model', 'gemini-2.5-flash-preview-04-17')
     ON CONFLICT (key) DO NOTHING
   `
+  
+  await sql`
+    CREATE TABLE IF NOT EXISTS scores (
+      id         SERIAL PRIMARY KEY,
+      player_name VARCHAR(64) NOT NULL,
+      score      INTEGER NOT NULL,
+      game       VARCHAR(32) NOT NULL DEFAULT 'papope',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
 }
 
 export async function runSupplementMigrations() {
