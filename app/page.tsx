@@ -10,26 +10,6 @@ function glitch(str: string, intensity = 0.3) {
   ).join('')
 }
 
-const FLOATING_THINGS = [
-  { x: 8,  y: 12, text: '404',                    rot: -15, size: 11, op: 0.65 },
-  { x: 82, y: 7,  text: 'NaN',                    rot: 8,   size: 10, op: 0.6  },
-  { x: 3,  y: 55, text: 'undefined',              rot: 90,  size: 9,  op: 0.6  },
-  { x: 91, y: 44, text: '¯\\_(ツ)_/¯',            rot: -5,  size: 10, op: 0.65 },
-  { x: 15, y: 85, text: 'todo: fix later',        rot: 12,  size: 9,  op: 0.6  },
-  { x: 75, y: 78, text: 'it works on my machine', rot: -20, size: 8,  op: 0.6  },
-  { x: 50, y: 4,  text: '0xDEADBEEF',             rot: 0,   size: 9,  op: 0.6  },
-  { x: 88, y: 90, text: 'wip',                    rot: 45,  size: 14, op: 0.65 },
-  { x: 42, y: 92, text: '// TODO',                rot: -8,  size: 10, op: 0.6  },
-  { x: 6,  y: 30, text: '∞',                      rot: 0,   size: 20, op: 0.6  },
-  { x: 60, y: 20, text: 'NULL',                   rot: 33,  size: 13, op: 0.5  },
-  { x: 22, y: 42, text: 'why',                    rot: -30, size: 16, op: 0.55 },
-  { x: 70, y: 60, text: 'SEGFAULT',               rot: 5,   size: 9,  op: 0.5  },
-  { x: 35, y: 70, text: ':(){ :|:& };:',          rot: -12, size: 8,  op: 0.5  },
-  { x: 55, y: 50, text: 'rm -rf /',               rot: 20,  size: 9,  op: 0.45 },
-  { x: 18, y: 8,  text: 'HTTP 418',               rot: -8,  size: 10, op: 0.55 },
-  { x: 93, y: 22, text: '...',                    rot: 0,   size: 18, op: 0.4  },
-]
-
 const LINKS = [
   { href: '/games',  label: 'jeux inutiles',        emoji: '🎮', desc: 'Divertissement de faible paroxysme',       disabled: false },
   { href: '/oracle', label: "l'oracle existentiel", emoji: '🔮', desc: 'Navigation existentielle · En Partie inoffensif', disabled: false },
@@ -66,7 +46,6 @@ export default function PapopePage() {
 
   // For rapid-click easter egg detection
   const clickTimestamps = useRef<number[]>([])
-  const trailId = useRef(0)
 
   // Client-only init
   useEffect(() => {
@@ -259,11 +238,6 @@ export default function PapopePage() {
         }
         .hidden-link:hover { color: #888; }
 
-        .floating-text {
-          position: fixed; font-family: 'IBM Plex Mono', monospace;
-          pointer-events: none; user-select: none; color: #e8e4dd;
-        }
-
         .badge {
           display: inline-block; background: #0d0d0d; border: 1px solid #333;
           font-family: 'VT323', monospace; font-size: 14px; color: #aaa;
@@ -314,7 +288,6 @@ export default function PapopePage() {
           font-size: 42px;
           animation: parade-run 3.5s linear forwards;
           white-space: nowrap;
-          z-index: -1;
         }
         @keyframes parade-run {
           from { transform: translateX(0px); }
@@ -361,7 +334,6 @@ export default function PapopePage() {
 
       <div className="papope-root">
 
-
         {/* Fake error toast */}
         {fakeError && (
           <div className="fake-error-toast">
@@ -394,16 +366,7 @@ export default function PapopePage() {
           </div>
         )}
 
-        {/* Floating background ghosts */}
-        {FLOATING_THINGS.map((f, i) => (
-          <div key={i} className="floating-text" style={{
-            left: `${f.x}%`, top: `${f.y}%`,
-            fontSize: `${f.size}px`, opacity: f.op,
-            transform: `rotate(${f.rot}deg)`,
-          }}>
-            {f.text}
-          </div>
-        ))}
+        
 
         {/* Status bar */}
         <div className="status-bar">
@@ -451,13 +414,6 @@ export default function PapopePage() {
 
         {/* Main content */}
         <div style={{ maxWidth: 760, margin: '0 auto', padding: '3rem 2rem 6rem' }}>
-
-          {/* WTF: "You are being watched" blinking */}
-          <div style={{ textAlign: 'right', marginBottom: '0.5rem' }}>
-            <span className="wtf-blink" style={{ fontFamily: 'VT323, monospace', fontSize: 13, color: '#ff4444', letterSpacing: '0.2em' }}>
-              ● BIG MOTHER IS WATCHING YOU
-            </span>
-          </div>
 
           {/* Giant title — click 10× in 2s for easter egg */}
           <div style={{ marginBottom: '1rem' }} className="click-zone" onClick={handleTitleClick}>
@@ -525,10 +481,9 @@ export default function PapopePage() {
               'mobile: probably fine',
               '©forever papope',
               // NEW WTF BADGES
-              'no blockchain involved',
-              'vibes-driven development',
+              'no blockchain involved'
             ].map((b, i) => (
-              <span key={i} className={`badge${i === 6 ? ' wobble-badge' : ''}`}>{b}</span>
+              <span key={i} className={`badge`}>{b}</span>
             ))}
           </div>
 
