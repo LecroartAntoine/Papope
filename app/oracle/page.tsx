@@ -609,7 +609,7 @@ export default function OraclePage() {
           </div>
         )}
 
-        <a href="/" className="bottom-nav">← sors moi de là</a>
+        <a href="/" className="bottom-nav">← retour à l'accueil</a>
       </div>
     </>
   )
