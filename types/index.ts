@@ -43,10 +43,10 @@ export const CATEGORY_META: Record<ActivityCategory, {
   color: string
   desc: string
 }> = {
-  movement:  { label: 'Mouvement',    emoji: '🏃', color: '#4EA8FF', desc: 'Cardio, sport, activité physique libre' },
-  strength:  { label: 'Force',        emoji: '💪', color: '#C8F135', desc: 'Musculation, exercices de résistance' },
-  recovery:  { label: 'Récupération', emoji: '🧘', color: '#A78BFA', desc: 'Mobilité, étirements, repos actif' },
-  event:     { label: 'Événement',    emoji: '📌', color: '#F5A623', desc: 'Compétition, blessure, voyage, repos' },
+  movement:  { label: 'Movement',  emoji: '🏃', color: '#4EA8FF', desc: 'Cardio, sports, free-form physical activity' },
+  strength:  { label: 'Strength',  emoji: '💪', color: '#C8F135', desc: 'Weightlifting, resistance exercises' },
+  recovery:  { label: 'Recovery',  emoji: '🧘', color: '#A78BFA', desc: 'Mobility, stretching, active rest' },
+  event:     { label: 'Event',     emoji: '📌', color: '#F5A623', desc: 'Competition, injury, travel, rest day' },
 }
 
 // ─── Unified DayItem — flat structure, all fields optional ───────────────────

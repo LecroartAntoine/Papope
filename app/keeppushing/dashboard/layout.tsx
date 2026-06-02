@@ -4,6 +4,6 @@ import { authOptions } from '@/lib/authOptions'
 
 export default async function KPDashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
-  if (!session) redirect('/keeppushing/login')
+  if (!session) redirect('/login')
   return <>{children}</>
 }

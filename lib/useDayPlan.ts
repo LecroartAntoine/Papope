@@ -23,7 +23,7 @@ export function useDayPlan(dateKey: string, refreshKey: number = 0) {
     initialized.current = false
     setLoading(true)
     setPlan(null)
-    fetch(`/api/day-plan/${dateKey}`)
+    fetch(`/api/keeppushing/day-plan/${dateKey}`)
       .then(r => r.json())
       .then(data => {
         if (data && !data.error) {
@@ -48,7 +48,7 @@ export function useDayPlan(dateKey: string, refreshKey: number = 0) {
   useEffect(() => {
     if (!initialized.current || !debouncedPlan) return
     setSaving(true)
-    fetch(`/api/day-plan/${dateKey}`, {
+    fetch(`/api/keeppushing/day-plan/${dateKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...debouncedPlan, type: debouncedPlan.category }),

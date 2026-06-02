@@ -1,8 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Lilita+One&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Design Tokens (Tailwind v4 @theme) */
+@theme {
+  /* Fonts */
+  --font-mono: 'Space Mono', ui-monospace, monospace;
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body: 'IBM Plex Mono', monospace;
+
+  /* Global dark theme colors */
+  --color-chalk:  #F0EDE6;
+  --color-carbon: #141414;
+  --color-slate:  #1E1E1E;
+  --color-steel:  #2A2A2A;
+  --color-zinc:   #3A3A3A;
+  --color-ash:    #888888;
+  --color-ghost:  #AAAAAA;
+  --color-accent: #C8F135;
+  --color-warn:   #F5A623;
+  --color-crit:   #FF4E4E;
+  --color-info:   #4EA8FF;
+
+  /* Vendredi / Games light theme colors */
+  --color-cream:  #F5F0E8;
+  --color-ink:    #1A1614;
+  --color-papope: #C8F135;
+  --color-muted:  #6B6560;
+}
 
 :root {
   --font-mono: 'Space Mono', monospace;
@@ -24,6 +49,15 @@ body {
   min-height: 100vh;
 }
 
+/* Keep Pushing grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-color: #141414;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
@@ -34,77 +68,4 @@ body {
 ::-webkit-scrollbar-thumb {
   background: #3A3A3A;
   border-radius: 2px;
-}
-
-/* Checkbox styles */
-.check-box {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 1.5px solid #3A3A3A;
-  border-radius: 3px;
-  background: transparent;
-  cursor: pointer;
-  position: relative;
-  flex-shrink: 0;
-  transition: all 0.15s ease;
-}
-
-.check-box:checked {
-  background: #C8F135;
-  border-color: #C8F135;
-}
-
-.check-box:checked::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 5px;
-  width: 5px;
-  height: 9px;
-  border: 2px solid #141414;
-  border-top: none;
-  border-left: none;
-  transform: rotate(45deg);
-}
-
-/* Subtle grid background */
-.grid-bg {
-  background-image: 
-    linear-gradient(rgba(200,241,53,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(200,241,53,0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
-/* Animated border */
-@keyframes pulse-border {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
-}
-
-.animate-pulse-border {
-  animation: pulse-border 2s ease-in-out infinite;
-}
-
-/* Progress bar */
-.progress-bar {
-  height: 3px;
-  background: #2A2A2A;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: #C8F135;
-  border-radius: 2px;
-  transition: width 0.4s ease;
-}
-
-/* Card hover */
-.day-card {
-  transition: border-color 0.2s ease, transform 0.2s ease;
-}
-.day-card:hover {
-  transform: translateY(-1px);
 }

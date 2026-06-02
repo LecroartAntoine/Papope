@@ -7,6 +7,6 @@ export default async function KeepPushingEntry() {
   if (session) {
     redirect('/keeppushing/dashboard')
   } else {
-    redirect('/keeppushing/login')
+    redirect('/login')
   }
 }

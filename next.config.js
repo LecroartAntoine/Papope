@@ -1,9 +1,5 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Ensures proper behavior for NextAuth with App Router on Vercel
   experimental: {
-    serverComponentsExternalPackages: [],
+    serverComponentsExternalPackages: ['@neondatabase/serverless'],
   },
-}
-
-module.exports = nextConfig
+};

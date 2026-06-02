@@ -41,7 +41,7 @@ export function useDayState(dateKey: string) {
     setLoading(true)
     setState(defaultState())
 
-    fetch(`/api/session/${dateKey}`)
+    fetch(`/api/keeppushing/session/${dateKey}`)
       .then(r => r.json())
       .then(data => {
         if (data && !data.error) {
@@ -64,7 +64,7 @@ export function useDayState(dateKey: string) {
 
   // Load weight from body_metrics
   useEffect(() => {
-    fetch(`/api/metrics?days=1`)
+    fetch(`/api/keeppushing/metrics?days=1`)
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
@@ -81,7 +81,7 @@ export function useDayState(dateKey: string) {
   useEffect(() => {
     if (!initialized.current) return
     setSaving(true)
-    fetch(`/api/session/${dateKey}`, {
+    fetch(`/api/keeppushing/session/${dateKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -114,7 +114,7 @@ export function useDayState(dateKey: string) {
   const setWeight = useCallback((weight: number | null) => {
     setState(s => ({ ...s, weight }))
     if (weight !== null) {
-      fetch('/api/metrics', {
+      fetch('/api/keeppushing/metrics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ date: dateKey, weight_kg: weight }),

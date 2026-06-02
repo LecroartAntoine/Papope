@@ -1,8 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useI18n } from '@/lib/i18n/context'
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const STARS = Array.from({ length: 120 }, (_, i) => ({
   x: (i * 137.508 + 23) % 100,
@@ -13,15 +14,15 @@ const STARS = Array.from({ length: 120 }, (_, i) => ({
   delay: (i % 11) * 0.3,
 }))
 
-// ─── Free APIs ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Free APIs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function fetchIngredients() {
   const [advice, fact, bored] = await Promise.allSettled([
-    fetch('/api/oracle-ingredients?type=advice')
+    fetch('/api/oracle/oracle-ingredients?type=advice')
       .then(r => r.json()).then(d => d.value ?? ''),
-    fetch('/api/oracle-ingredients?type=fact')
+    fetch('/api/oracle/oracle-ingredients?type=fact')
       .then(r => r.json()).then(d => d.value ?? ''),
-    fetch('/api/oracle-ingredients?type=bored')
+    fetch('/api/oracle/oracle-ingredients?type=bored')
       .then(r => r.json()).then(d => d.value ?? ''),
   ])
   return {
@@ -33,7 +34,7 @@ async function fetchIngredients() {
 
 async function callOracle(question: string, ingredients: { advice: string; fact: string; activity: string }): Promise<string> {
 
-  const res = await fetch(new Request('/api/oracle-prediction', {
+  const res = await fetch(new Request('/api/oracle/oracle-prediction', {
       method: 'POST',
       body: JSON.stringify({
         ingredients,
@@ -44,7 +45,7 @@ async function callOracle(question: string, ingredients: { advice: string; fact:
   return await res.json()
 }
 
-// ─── Components ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Starfield() {
   return (
@@ -77,7 +78,7 @@ function CosmicEye({ state }: { state: 'idle' | 'thinking' | 'done' }) {
           const y = 100 + 82 * Math.sin(rad)
           return <text key={i} x={x} y={y} textAnchor="middle" dominantBaseline="middle"
             fontSize="8" fill="rgba(180,140,80,0.35)" fontFamily="serif">
-            {['∞','Ω','✦','⊕','∴','⊗','✧','⊙'][i]}
+            {['âˆž','Î©','âœ¦','âŠ•','âˆ´','âŠ—','âœ§','âŠ™'][i]}
           </text>
         })}
         {/* Eye shape */}
@@ -118,16 +119,17 @@ function TypewriterText({ text, speed = 18 }: { text: string; speed?: number }) 
   return (
     <span>
       {displayed}
-      {!done && <span className="cursor-blink">▌</span>}
+      {!done && <span className="cursor-blink">â–Œ</span>}
     </span>
   )
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Phase = 'idle' | 'thinking' | 'result' | 'error'
 
 export default function OraclePage() {
+  const { t } = useI18n()
   const [question, setQuestion] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
   const [prophecy, setProphecy] = useState('')
@@ -137,13 +139,13 @@ export default function OraclePage() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const THINKING_MSGS = [
-    'Consultation de 7.5 million années de sagesse',
-    'Pause café',
-    "Évaluation de la rétrogradicité de Mercure",
+    'Consultation de 7.5 million annÃ©es de sagesse',
+    'Pause cafÃ©',
+    "Ã‰valuation de la rÃ©trogradicitÃ© de Mercure",
     "Lecture de l'astronomie pour les nuls",
     'Recherche approfondi de la recette du Gloubi-boulga',
     'Fabrication du cerceuil lunaire',
-    'Probablement bientôt fini si je veux',
+    'Probablement bientÃ´t fini si je veux',
   ]
 
 
@@ -309,7 +311,7 @@ export default function OraclePage() {
           align-items: center;
           gap: 12px;
           margin: 1.5rem 0;
-          opacity: 0.3;
+          opacity: 0.65;
         }
         .divider::before, .divider::after {
           content: '';
@@ -350,7 +352,7 @@ export default function OraclePage() {
           transition: border-color 0.3s, box-shadow 0.3s;
           letter-spacing: 0.03em;
         }
-        .question-input::placeholder { color: rgba(180,140,60,0.25); font-style: italic; }
+        .question-input::placeholder { color: rgba(180,140,60,0.5); font-style: italic; }
         .question-input:focus {
           border-color: rgba(200,160,60,0.85);
           box-shadow: 0 0 20px rgba(200,150,40,0.08), inset 0 0 10px rgba(200,150,40,0.03);
@@ -412,7 +414,7 @@ export default function OraclePage() {
           to   { opacity: 1; transform: translateY(0); }
         }
         .prophecy-wrap::before, .prophecy-wrap::after {
-          content: '✦';
+          content: 'âœ¦';
           position: absolute;
           font-size: 10px;
           color: rgba(200,160,60,0.85);
@@ -463,9 +465,9 @@ export default function OraclePage() {
           font-size: 0.6rem;
           letter-spacing: 0.05em;
           padding: 2px 8px;
-          border: 1px solid rgba(180,140,60,0.2);
-          color: rgba(180,140,60,0.35);
-          background: rgba(180,140,60,0.04);
+          border: 1px solid rgba(180,140,60,0.35);
+          color: rgba(180,140,60,0.65);
+          background: rgba(180,140,60,0.08);
         }
 
         .again-btn {
@@ -487,7 +489,7 @@ export default function OraclePage() {
           font-family: 'Inconsolata', monospace;
           font-size: 0.8rem;
           letter-spacing: 0.2em;
-          color: rgba(150,120,60,0.85);
+          color: rgba(200,170,100,0.85);
           margin-top: 2rem;
           text-align: center;
         }
@@ -499,7 +501,7 @@ export default function OraclePage() {
           color: rgba(200,100,80,0.9);
           text-align: center;
           letter-spacing: 0.05em;
-          border: 1px solid rgba(200,100,80,0.2);
+          border: 1px solid rgba(200,100,80,0.4);
           padding: 12px 24px;
           max-width: 400px;
         }
@@ -513,11 +515,11 @@ export default function OraclePage() {
           font-family: 'Inconsolata', monospace;
           font-size: 0.9rem;
           letter-spacing: 0.2em;
-          color: rgba(150,120,60,0.9);
+          color: rgba(200,170,100,0.85);
           text-decoration: none;
           transition: color 0.2s;
         }
-        .bottom-nav:hover { color: rgba(180,140,60,1); }
+        .bottom-nav:hover { color: rgba(220,190,120,1); }
 
         @media (max-width: 480px) {
           .prophecy-wrap { padding: 20px 18px; }
@@ -532,40 +534,39 @@ export default function OraclePage() {
         {/* Eye */}
         <CosmicEye state={phase === 'thinking' ? 'thinking' : phase === 'result' ? 'done' : 'idle'} />
 
-        {/* Title */}
-        <h1 className="oracle-title">L'Oracle</h1>
+         {/* Title */}
+         <h1 className="oracle-title">{t('oracle.title')}</h1>
 
-        {/* Idle state */}
-        {phase === 'idle' && (
-          <div className="question-area">
-            <p className="question-label">
-              Poses ta question à l'univers.<br />
-              <span style={{ fontSize: '0.95rem', opacity: 0.6 }}>Ou pas. L'univers s'en fout royalement.</span>
-            </p>
-            <input
-              ref={inputRef}
-              className="question-input"
-              type="text"
-              maxLength={200}
-              placeholder="Quel est le but de l'existence ?"
-              value={question}
-              onChange={e => setQuestion(e.target.value)}
-              onKeyDown={handleKey}
-              autoFocus
-            />
-            <button className="consult-btn" onClick={consult}>
-              Consulter l'oracle
-            </button>
-          </div>
-        )}
+         {/* Idle state */}
+         {phase === 'idle' && (
+           <div className="question-area">
+             <p className="question-label">
+               {t('oracle.description')}
+             </p>
+             <input
+               ref={inputRef}
+               className="question-input"
+               type="text"
+               maxLength={200}
+               placeholder={t('oracle.description')}
+               value={question}
+               onChange={e => setQuestion(e.target.value)}
+               onKeyDown={handleKey}
+               autoFocus
+             />
+             <button className="consult-btn" onClick={consult}>
+               {t('oracle.title')}
+             </button>
+           </div>
+         )}
 
-        {/* Thinking state */}
-        {phase === 'thinking' && (
-          <div style={{ textAlign: 'center' }}>
-            <div className="divider"><span>⊕ Calculs ⊕</span></div>
-            <div key={thinkingMsg} className="thinking-msg">{thinkingMsg}</div>
-          </div>
-        )}
+         {/* Thinking state */}
+         {phase === 'thinking' && (
+           <div style={{ textAlign: 'center' }}>
+             <div className="divider"><span>{t('oracle.calculations')}</span></div>
+             <div key={thinkingMsg} className="thinking-msg">{thinkingMsg}</div>
+           </div>
+         )}
 
         {/* Result */}
         {phase === 'result' && (
@@ -575,42 +576,42 @@ export default function OraclePage() {
                 color: 'rgba(180,140,60,0.9)', letterSpacing: '0.1em',
                 marginBottom: '1rem', fontStyle: 'italic', textAlign: 'center',
                 maxWidth: 420 }}>
-                re: "{question.length > 80 ? question.slice(0, 80) + '…' : question}"
+                re: "{question.length > 80 ? question.slice(0, 80) + 'â€¦' : question}"
               </div>
             )}
             <div className="prophecy-wrap">
-              <div className="prophecy-label">∴ Lecture de l'Oracle #{consultCount} ∴</div>
-              <p className="prophecy-text">
-                <TypewriterText text={prophecy} speed={16} />
-              </p>
-              {ingredients && (
-                <div className="prophecy-footer">
-                  <button className="again-btn" onClick={reset}>Nouvelle lecture →</button>
-                </div>
-              )}
-            </div>
+               <div className="prophecy-label">âˆ´ Oracle Reading #{consultCount} âˆ´</div>
+               <p className="prophecy-text">
+                 <TypewriterText text={prophecy} speed={16} />
+               </p>
+               {ingredients && (
+                 <div className="prophecy-footer">
+                   <button className="again-btn" onClick={reset}>Next Reading â†’</button>
+                 </div>
+               )}
+             </div>
           </>
         )}
 
-        {/* Error */}
-        {phase === 'error' && (
-          <div style={{ textAlign: 'center' }}>
-            <div className="error-msg">
-              L'Oracle exécute son droit de grêve.<br />
-              <span style={{ opacity: 0.6 }}>Oui, la CGT de l'espace quantique est réelle.</span>
-            </div>
-            <button className="again-btn" style={{ marginTop: 16 }} onClick={reset}>Voir s'il est revenu bosser</button>
-          </div>
-        )}
+         {/* Error */}
+         {phase === 'error' && (
+           <div style={{ textAlign: 'center' }}>
+             <div className="error-msg">
+               {t('oracle.onStrike')}
+             </div>
+             <button className="again-btn" style={{ marginTop: 16 }} onClick={reset}>{t('oracle.checkIfBack')}</button>
+           </div>
+         )}
 
-        {consultCount > 0 && (
-          <div className="consult-counter">
-            {consultCount} âme{consultCount !== 1 ? 's' : ''} consultée{consultCount !== 1 ? 's' : ''} · {42 + consultCount} questions posées à travers le Multivers Marvel.
-          </div>
-        )}
+         {consultCount > 0 && (
+           <div className="consult-counter">
+             {t('oracle.soulsConsulted', { n: consultCount })}
+           </div>
+         )}
 
-        <a href="/" className="bottom-nav">← retour à l'accueil</a>
+         <a href="/" className="bottom-nav">â† back to home</a>
       </div>
     </>
   )
 }
+

@@ -15,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
-    "old_papope_game"
+    "old_papope_game",
+    "TO IMPLEMENT"
   ]
 }

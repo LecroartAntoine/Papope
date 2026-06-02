@@ -12,6 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr">
       <head>
         <meta name="apple-mobile-web-app-title" content="Papope" />
+        <link rel="icon" href="./favicon.ico" sizes="any" />
       </head>
       <body>
         <Providers>{children}</Providers>

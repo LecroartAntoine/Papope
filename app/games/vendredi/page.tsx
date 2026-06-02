@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import PapopeGame from "@/components/PapopeGame";
-import Leaderboard from "@/components/Leaderboard";
+import PapopeGame from "@/components/Games/PapopeGame";
+import Leaderboard from "@/components/KeepPushing/Leaderboard";
 
 // ─── Phase Types ─────────────────────────────────────────────────────────────
 type Phase = "name-input" | "intro" | "playing" | "result";
@@ -105,7 +105,7 @@ export default function PapopePage() {
       setPhase("result");
  
       try {
-        const res  = await fetch("/api/scores", {
+        const res  = await fetch("/api/games/scores", {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body:    JSON.stringify({ playerName, score: finalScore, game: "papope" }),

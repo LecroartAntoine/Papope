@@ -1,11 +1,16 @@
+'use client'
+
 import Link from 'next/link'
+import { useI18n } from '@/lib/i18n/context'
 
 export default function GamesPortal() {
+  const { t } = useI18n()
+
   const games = [
     {
       id: 'vendredi',
-      title: "C'est vendredi",
-      desc: "Clonage intensif de minois ​​​macroniens",
+      title: t('games.friday'),
+      desc: t('games.macronCloning'),
       href: "/games/vendredi",
       image: "images/macron.png"
     }
@@ -18,17 +23,17 @@ export default function GamesPortal() {
           left-1/2
           -translate-x-1/2">
         <Link href="/" className="text-[#888] hover:text-[#e8e4dd] transition-colors text-sm">
-          ← retour à l&apos;accueil
+          {t('games.backToHome')}
         </Link>
       </div>
       
       <div className="max-w-xl w-full">
         <h1 className="text-4xl font-bold mb-8 text-center uppercase tracking-widest text-[#c8f135]">
-          Portail des jeux
+          {t('games.gamesPortal')}
         </h1>
         
         <p className="text-[#888] text-center mb-12 text-sm italic">
-          Choisis ton poison.
+          {t('games.chooseYourPoison')}
         </p>
 
         <div className="grid gap-6">
@@ -53,8 +58,8 @@ export default function GamesPortal() {
             <div className="flex items-center gap-6 grayscale">
               <span className="text-5xl">❓</span>
               <div>
-                <h2 className="text-2xl font-bold uppercase tracking-wider text-[#888] mb-2">Prochain jeu</h2>
-                <p className="text-[#666] text-sm">En cours de développement...</p>
+                <h2 className="text-2xl font-bold uppercase tracking-wider text-[#888] mb-2">{t('games.nextGame')}</h2>
+                <p className="text-[#666] text-sm">{t('games.inDevelopment')}</p>
               </div>
             </div>
           </div>
