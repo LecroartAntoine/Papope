@@ -281,15 +281,6 @@ export default function HomePage() {
                   </Link>
                 )
               }
-              // Not accessible (either not authenticated or no access)
-              return (
-                <div key={section.section} className="card-locked">
-                  <div className="locked-badge">🔒</div>
-                  <div className="card-emoji">{section.emoji}</div>
-                  <h2 className="card-title">{section.title}</h2>
-                  <p className="card-desc">{section.desc}</p>
-                </div>
-              )
             })}
           </div>
 
