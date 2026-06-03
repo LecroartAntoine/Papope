@@ -324,117 +324,117 @@ export default function ChroniclePage() {
 
         <div className={styles.mist} />
 
-         {/* Back link */}
-         <Link href="/" className={styles['back-nav']}>
-           {t('chronicle.backToHome')}
-         </Link>
+        {/* Back link */}
+        <Link href="/" className={styles['back-nav']}>
+          {t('chronicle.backToHome')}
+        </Link>
 
-         {/* Header */}
-         <header className={styles['chronicle-header']}>
-           <h1 className={styles['chronicle-wordmark']}>{t('chronicle.theChronicle')}</h1>
-           <div className={styles['chronicle-divider']}>
-             <span>{t('chronicle.collectiveGrimoire')}</span>
-           </div>
-         </header>
+        {/* Header */}
+        <header className={styles['chronicle-header']}>
+          <h1 className={styles['chronicle-wordmark']}>{t('chronicle.theChronicle')}</h1>
+          <div className={styles['chronicle-divider']}>
+            <span>{t('chronicle.collectiveGrimoire')}</span>
+          </div>
+        </header>
 
-         {/* Toolbar */}
-         <div className={styles.toolbar}>
-           <div className={styles['search-wrap']}>
-             <span className={styles['search-icon']}>🔍</span>
-             <input
-               className={styles['search-input']}
-               placeholder={t('chronicle.searchTome')}
-               value={search}
-               onChange={e => setSearch(e.target.value)}
-             />
-           </div>
-           <div className={styles['sort-wrap']}>
-             <label className={styles['sort-label']}>{t('chronicle.sortBy') || 'Sort'}</label>
-             <select 
-               className={styles['sort-select']}
-               value={sortBy}
-               onChange={e => setSortBy(e.target.value as SortBy)}
-             >
-               <option value="date_added">📅 {t('chronicle.dateAdded') || 'Date Added'}</option>
-               <option value="title">📖 {t('chronicle.bookTitle') || 'Title'}</option>
-               <option value="author">✍️ {t('chronicle.author') || 'Author'}</option>
-               <option value="rating">⭐ {t('chronicle.rating') || 'Rating'}</option>
-               <option value="readers">👥 {t('chronicle.readers') || 'Most Read'}</option>
-             </select>
-           </div>
-           <button className={styles['add-btn']} onClick={() => setShowAdd(true)}>
-             {t('chronicle.registerBook')}
-           </button>
-         </div>
+        {/* Toolbar */}
+        <div className={styles.toolbar}>
+          <div className={styles['search-wrap']}>
+            <span className={styles['search-icon']}>🔍</span>
+            <input
+              className={styles['search-input']}
+              placeholder={t('chronicle.searchTome')}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div className={styles['sort-wrap']}>
+            <label className={styles['sort-label']}>{t('chronicle.sortBy') || 'Sort'}</label>
+            <select 
+              className={styles['sort-select']}
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as SortBy)}
+            >
+              <option value="date_added">📅 {t('chronicle.dateAdded') || 'Date Added'}</option>
+              <option value="title">📖 {t('chronicle.bookTitle') || 'Title'}</option>
+              <option value="author">✍️ {t('chronicle.author') || 'Author'}</option>
+              <option value="rating">⭐ {t('chronicle.rating') || 'Rating'}</option>
+              <option value="readers">👥 {t('chronicle.readers') || 'Most Read'}</option>
+            </select>
+          </div>
+          <button className={styles['add-btn']} onClick={() => setShowAdd(true)}>
+            {t('chronicle.registerBook')}
+          </button>
+        </div>
 
-         {/* Category filter */}
-         <div className={styles['cat-filter']}>
-           <button
-             className={[
-               styles['cat-pill'],
-               selectedCategory === null ? styles.active : null
-             ].filter(Boolean).join(' ')}
-             onClick={() => setSelectedCategory(null)}
-           >
-             ⭐ All
-           </button>
-           {ALL_CATEGORIES.map(c => (
-             <button
-               key={c}
-               className={[
-                 styles['cat-pill'],
-                 selectedCategory === c ? styles.active : null
-               ].filter(Boolean).join(' ')}
-               onClick={() => setSelectedCategory(c)}
-             >
-               {CATEGORY_SIGILS[c] ? `${CATEGORY_SIGILS[c]} ` : ''}{c}
-             </button>
-           ))}
-         </div>
+        {/* Category filter */}
+        <div className={styles['cat-filter']}>
+          <button
+            className={[
+              styles['cat-pill'],
+              selectedCategory === null ? styles.active : null
+            ].filter(Boolean).join(' ')}
+            onClick={() => setSelectedCategory(null)}
+          >
+            ⭐ All
+          </button>
+          {ALL_CATEGORIES.map(c => (
+            <button
+              key={c}
+              className={[
+                styles['cat-pill'],
+                selectedCategory === c ? styles.active : null
+              ].filter(Boolean).join(' ')}
+              onClick={() => setSelectedCategory(c)}
+            >
+              {CATEGORY_SIGILS[c] ? `${CATEGORY_SIGILS[c]} ` : ''}{c}
+            </button>
+          ))}
+        </div>
 
-         {/* Books grid */}
-         {loading
-           ? <div className={styles['loading-text']}>{t('chronicle.grimoireOpens')}</div>
-           : filtered.length === 0
-             ? (
-               <div className={styles['empty-state']}>
-                 <div className={styles['empty-glyph']}>📖</div>
-                 <p className={styles['empty-text']}>
-                   {books.length === 0
-                     ? t('chronicle.emptyGrimoire')
-                     : t('chronicle.noResults')}
-                 </p>
-               </div>
-             )
-            : (
-              <div className={styles['books-grid']}>
-                {filtered.map(book => (
-                  <BookCard
-                    key={book.id}
-                    book={book}
-                    onClick={() => router.push(`/chronicle/${book.id}`)}
-                  />
-                ))}
+        {/* Books grid */}
+        {loading
+          ? <div className={styles['loading-text']}>{t('chronicle.grimoireOpens')}</div>
+          : filtered.length === 0
+            ? (
+              <div className={styles['empty-state']}>
+                <div className={styles['empty-glyph']}>📖</div>
+                <p className={styles['empty-text']}>
+                  {books.length === 0
+                    ? t('chronicle.emptyGrimoire')
+                    : t('chronicle.noResults')}
+                </p>
               </div>
             )
-        }
+          : (
+            <div className={styles['books-grid']}>
+              {filtered.map(book => (
+                <BookCard
+                  key={book.id}
+                  book={book}
+                  onClick={() => router.push(`/chronicle/${book.id}`)}
+                />
+              ))}
+            </div>
+          )
+      }
 
-           {/* Add book modal */}
-           {showAdd && (
-             <AddBookModal
-               onClose={() => setShowAdd(false)}
-               onAdded={fetchBooks}
-               t={t}
-               username={session?.user?.name || undefined}
-             />
-           )}
+          {/* Add book modal */}
+          {showAdd && (
+            <AddBookModal
+              onClose={() => setShowAdd(false)}
+              onAdded={fetchBooks}
+              t={t}
+              username={session?.user?.name || undefined}
+            />
+          )}
 
-           {/* Floating Librarian Button */}
-           <Link href="/chronicle/librarian" className={styles['librarian-fab']}>
-             <BookOpen size={20} />
-             <span className={styles['fab-label']}>{t('librarian.title')}</span>
-           </Link>
-       </div>
-     </>
-   )
- }
+          {/* Floating Librarian Button */}
+          <Link href="/chronicle/librarian" className={styles['librarian-fab']}>
+            <BookOpen size={20} />
+            <span className={styles['fab-label']}>{t('librarian.title')}</span>
+          </Link>
+      </div>
+    </>
+  )
+}

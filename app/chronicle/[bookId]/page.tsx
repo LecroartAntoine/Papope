@@ -3,9 +3,12 @@
 import { useSession } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { format, parseISO } from 'date-fns'
+import { format, parseISO, parse } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useI18n } from '@/lib/i18n/context'
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+
 
 type Review = {
     id: number
@@ -28,6 +31,16 @@ type BookDetail = {
   added_at: string
   reviews: Review[]
 }
+
+// Safely converts YYYY-MM string to a Date object for react-datepicker
+const getSafeDateValue = (dateStr: string) => {
+  if (!dateStr) return null;
+  try {
+    return parse(dateStr.substring(0, 7), 'yyyy-MM', new Date());
+  } catch {
+    return null;
+  }
+};
 
 
 function Stars({ rating, quantity, interactive = false, onSet }: {
@@ -450,15 +463,24 @@ function AddReviewForm({ bookId, onAdded, t, username }: { bookId: number; onAdd
      <div className="review-form-wrap">
        <h3 className="review-form-title">{t('chronicle.carveyourReading')}</h3>
 
-{done ? (
+        {done ? (
           <div className="review-done">{t('chronicle.traceInscribed')}</div>
         ) : (
           <>
             <div className="form-grid">
               <div>
                 <label className="field-label">{t('chronicle.readingDate')}</label>
-                <input className="field-input" type="month"
-                  value={form.date_read} onChange={e => setForm(f => ({ ...f, date_read: e.target.value }))} />
+                <DatePicker
+                  selected={getSafeDateValue(form.date_read)}
+                  onChange={(date: Date | null) => {
+                    const dateString = date ? format(date, 'yyyy-MM') : '';
+                    setForm(f => ({ ...f, date_read: dateString }));
+                  }}
+                  showMonthYearPicker
+                  dateFormat="MMMM yyyy"
+                  className="field-input"
+                  placeholderText="Select month..."
+                />
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
                 <label className="field-label">{t('chronicle.rating')}</label>
@@ -544,10 +566,10 @@ function EditTraceModal({
   t: (key: string) => string
 }) {
   const [form, setForm] = useState({
-    date_read: review.date_read || '',
-    rating: review.rating || 0,
-    recommendation: review.recommendation || '',
-  })
+  date_read: review.date_read ? review.date_read.substring(0, 7) : '', 
+  rating: review.rating || 0,
+  recommendation: review.recommendation || '',
+})
   const [loading, setLoading] = useState(false)
   const [enriching, setEnriching] = useState(false)
   const [error, setError] = useState('')
@@ -627,20 +649,19 @@ function EditTraceModal({
 
         <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>
           <span style={{ color: 'rgba(217,119,6,0.75)', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase' }}>{t('chronicle.readingDate')}</span>
-          <input 
-            type="month"
-            value={form.date_read}
-            onChange={e => setForm(f => ({ ...f, date_read: e.target.value }))}
-            style={{
-              width: '100%',
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(232,220,190,0.18)',
-              color: '#E8DCBE',
-              padding: '8px',
-              marginTop: '4px',
-              borderRadius: '2px'
-            }}
-          />
+          <div style={{ marginTop: '4px' }}>
+            <DatePicker 
+              selected={getSafeDateValue(form.date_read)}
+              onChange={(date: Date | null) => {
+                const dateString = date ? format(date, 'yyyy-MM') : '';
+                setForm(f => ({ ...f, date_read: dateString }));
+              }}
+              showMonthYearPicker
+              dateFormat="MMMM yyyy"
+              className="field-input"
+              placeholderText="Select month..."
+            />
+          </div>
         </label>
 
         <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>
@@ -865,7 +886,6 @@ const avgRating = validReviews.length
         }
         .back-link:hover { color: rgba(232,220,190,0.7); }
 
-        /* â”€â”€ Hero â”€â”€ */
         .book-hero {
           position: relative;
           z-index: 5;
@@ -1010,7 +1030,7 @@ const avgRating = validReviews.length
           letter-spacing: 0.1em;
         }
 
-        /* â”€â”€ Divider â”€â”€ */
+        /* Divider */
         .section-divider {
           display: flex;
           align-items: center;
@@ -1035,7 +1055,7 @@ const avgRating = validReviews.length
           white-space: nowrap;
         }
 
-        /* â”€â”€ Reviews section â”€â”€ */
+        /* Reviews section */
         .reviews-section {
           position: relative;
           z-index: 5;
@@ -1053,7 +1073,7 @@ const avgRating = validReviews.length
           margin: 0 0 1.5rem;
         }
 
-        /* â”€â”€ Review card â”€â”€ */
+        /* Review card */
         .review-card {
           border: 1px solid rgba(232,220,190,0.12);
           padding: 1.5rem;
@@ -1063,7 +1083,7 @@ const avgRating = validReviews.length
           position: relative;
           transition: border-color 0.2s;
         }
-.review-card::before {
+        .review-card::before {
            content: '✦';
            position: absolute;
            top: 12px;
@@ -1159,7 +1179,7 @@ const avgRating = validReviews.length
           padding: 1rem 0;
         }
 
-        /* â”€â”€ Add review â”€â”€ */
+        /* Add review */
         .add-review-btn {
           font-family: 'Cinzel', serif;
           font-size: 0.75rem;
@@ -1230,7 +1250,19 @@ const avgRating = validReviews.length
           border-radius: 2px;
         }
         .field-input::placeholder { color: rgba(232,220,190,0.4); font-style: italic; }
-        .field-input[type="date"] { color-scheme: dark; }
+        .field-input[type="date"], 
+        .field-input[type="month"], 
+        .field-input[type="time"] { 
+          color-scheme: dark; 
+        }
+
+        .field-input::-webkit-datetime-edit,
+        .field-input::-webkit-datetime-edit-fields-wrapper,
+        .field-input::-webkit-datetime-edit-text,
+        .field-input::-webkit-datetime-edit-month-field,
+        .field-input::-webkit-datetime-edit-year-field {
+          color: #E8DCBE !important;
+        }
         .field-input:focus, .field-textarea:focus { border-color: rgba(217,119,6,0.45); }
         .field-textarea { resize: vertical; min-height: 90px; width: 100%; }
 
@@ -1309,6 +1341,73 @@ const avgRating = validReviews.length
           .book-cover-hero { width: 140px; }
           .form-grid { grid-template-columns: 1fr; }
           .book-hero, .reviews-section { padding: 0 1.2rem; }
+        }
+
+        /* --- React Datepicker Mystical Style Overrides --- */
+        .react-datepicker-wrapper {
+          width: 100% !important;
+        }
+
+        .react-datepicker {
+          background-color: #0D0914 !important;
+          border: 1px solid rgba(232, 220, 190, 0.18) !important;
+          font-family: 'IM Fell English', serif !important;
+          color: #E8DCBE !important;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8) !important;
+        }
+
+        .react-datepicker__header {
+          background-color: #0D0914 !important;
+          border-bottom: 1px solid rgba(232, 220, 190, 0.15) !important;
+          padding-top: 10px !important;
+        }
+
+        .react-datepicker__current-month, 
+        .react-datepicker-year-header {
+          color: #F59E0B !important; /* Amber gold */
+          font-family: 'Cinzel', serif !important;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-size: 0.8rem !important;
+        }
+
+        .react-datepicker__month-container {
+          background-color: #0D0914 !important;
+        }
+
+        .react-datepicker__month-text {
+          color: #E8DCBE !important;
+          font-family: 'Inconsolata', monospace !important;
+          font-size: 0.75rem !important;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          padding: 8px 0 !important;
+          transition: all 0.2s ease !important;
+        }
+
+        .react-datepicker__month-text:hover {
+          background-color: rgba(217, 119, 6, 0.2) !important;
+          color: #F59E0B !important;
+          border-radius: 2px !important;
+        }
+
+        .react-datepicker__month--selected,
+        .react-datepicker__month-text--keyboard-selected,
+        .react-datepicker__month--selected:hover {
+          background-color: #D97706 !important;
+          color: #06040C !important;
+          font-weight: bold !important;
+          border-radius: 2px !important;
+          box-shadow: 0 0 8px rgba(217, 119, 6, 0.4) !important;
+        }
+
+        .react-datepicker__navigation {
+          top: 6px !important;
+        }
+
+        .react-datepicker__navigation-icon::before {
+          border-color: #F59E0B !important;
+          border-width: 2px 2px 0 0 !important;
         }
       `}</style>
 
@@ -1452,4 +1551,3 @@ const avgRating = validReviews.length
      </>
    )
  }
-
