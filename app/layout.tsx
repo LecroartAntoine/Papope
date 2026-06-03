@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <head>
         <meta name="apple-mobile-web-app-title" content="Papope" />
         <link rel="icon" href="./favicon.ico" sizes="any" />

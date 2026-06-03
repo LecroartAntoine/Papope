@@ -412,13 +412,13 @@ export default function AdminPage() {
         <div className="admin-container">
           {/* Header */}
           <div className="admin-header">
-            <h1 className="admin-title">Administration</h1>
+            <h1 className="admin-title">{t("admin.title")}</h1>
             <div className="admin-actions">
               <button className="admin-btn secondary" onClick={() => router.push('/')}>
-                â† Accueil
+                {t("admin.welcome")}
               </button>
               <button className="admin-btn secondary" onClick={() => signOut()}>
-                DÃ©connexion
+                {t("admin.disconnect")}
               </button>
             </div>
           </div>
@@ -428,19 +428,19 @@ export default function AdminPage() {
           {/* Users Section */}
           <div className="admin-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h2 className="section-title">ðŸ‘¥ Utilisateurs</h2>
+              <h2 className="section-title">{t("admin.users")}</h2>
               <button
                 className="admin-btn"
                 onClick={() => setShowCreateForm(!showCreateForm)}
               >
-                {showCreateForm ? 'âœ• Annuler' : '+ CrÃ©er un utilisateur'}
+                {showCreateForm ? t("admin.cancel") : t("admin.create")}
               </button>
             </div>
 
             {showCreateForm && (
               <div className="access-panel">
                 <div className="form-group">
-                  <label className="form-label">Nom d'utilisateur</label>
+                  <label className="form-label">{t("admin.username")}</label>
                   <input
                     className="form-input"
                     type="text"
@@ -452,7 +452,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Mot de passe</label>
+                  <label className="form-label">{t("admin.password")}</label>
                   <input
                     className="form-input"
                     type="password"
@@ -473,7 +473,7 @@ export default function AdminPage() {
                     className="form-checkbox"
                   />
                   <label htmlFor="isAdmin" style={{ margin: 0, cursor: 'pointer' }}>
-                    Admin
+                    {t("admin.admin")}
                   </label>
                 </div>
 

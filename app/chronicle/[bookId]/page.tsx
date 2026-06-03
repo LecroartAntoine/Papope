@@ -7,16 +7,16 @@ import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useI18n } from '@/lib/i18n/context'
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 type Review = {
-   id: number
-   reviewer_name: string
-   date_read: string | null
-   rating: number | null
-   recommendation: string
-   created_at: string
- }
+    id: number
+    reviewer_name: string
+    date_read: string | null
+    rating: string | null
+    recommendation: string
+    created_at: string
+  }
+
+type EditingTraceId = number | null
 
 type BookDetail = {
   id: number
@@ -29,58 +29,61 @@ type BookDetail = {
   reviews: Review[]
 }
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function Stars({ rating, interactive = false, onSet }: {
-  rating: number | null
-  interactive?: boolean
-  onSet?: (n: number) => void
-}) {
-  const [hovered, setHovered] = useState<number | null>(null)
-  const display = hovered ?? rating ?? 0
-  
-  return (
-    <span style={{ letterSpacing: 3, cursor: interactive ? 'pointer' : 'default' }}>
-      {Array.from({ length: 5 }, (_, i) => (
-        <span key={i} style={{ display: 'inline-block', position: 'relative' }}>
-          {/* Full stars */}
-          <span
-            onClick={() => interactive && onSet?.(i + 1)}
-            onMouseEnter={() => interactive && setHovered(i + 1)}
-            onMouseLeave={() => interactive && setHovered(null)}
-            style={{
-              color: i < display ? '#D97706' : 'rgba(232,220,190,0.18)',
-              fontSize: interactive ? 22 : 14,
-              transition: 'color 0.1s',
-              cursor: interactive ? 'pointer' : 'default',
-            }}
-          >★</span>
-          
-          {/* Half-star overlay for decimal ratings */}
-          {interactive && (
+function Stars({ rating, quantity, interactive = false, onSet }: {
+    rating: number | null
+    quantity?: number | null
+    interactive?: boolean
+    onSet?: (n: number) => void
+  }) {
+    const [hovered, setHovered] = useState<number | null>(null)
+    const display = hovered ?? rating ?? 0
+    
+    return (
+      <span style={{ letterSpacing: 3, cursor: interactive ? 'pointer' : 'default' }}>
+        {Array.from({ length: 5 }, (_, i) => (
+          <span key={i} style={{ display: 'inline-block', position: 'relative' }}>
+            {/* Full stars */}
             <span
-              onClick={() => onSet?.(i + 0.5)}
-              onMouseEnter={() => setHovered(i + 0.5)}
-              onMouseLeave={() => setHovered(null)}
+              onClick={() => interactive && onSet?.(i + 1)}
+              onMouseEnter={() => interactive && setHovered(i + 1)}
+              onMouseLeave={() => interactive && setHovered(null)}
               style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                width: '50%',
-                height: '100%',
-                overflow: 'hidden',
-                cursor: 'pointer',
-              }}
-            >
-              <span style={{
-                color: i + 0.5 <= display ? '#D97706' : 'rgba(232,220,190,0.18)',
+                color: i < display ? '#F59E0B' : 'rgba(232,220,190,0.25)',
                 fontSize: interactive ? 22 : 14,
                 transition: 'color 0.1s',
-              }}>★</span>
-            </span>
-          )}
+                cursor: interactive ? 'pointer' : 'default',
+                textShadow: i < display ? '0 0 4px rgba(217,119,6,0.6)' : 'none'
+              }}
+            >★</span>
+            
+            {/* Half-star overlay for decimal ratings */}
+            {interactive && (
+              <span
+                onClick={() => onSet?.(i + 0.5)}
+                onMouseEnter={() => setHovered(i + 0.5)}
+                onMouseLeave={() => setHovered(null)}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: '50%',
+                  height: '100%',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{
+                  color: i + 0.5 <= display ? '#F59E0B' : 'rgba(232,220,190,0.25)',
+                  fontSize: interactive ? 22 : 14,
+                  transition: 'color 0.1s',
+                  textShadow: i + 0.5 <= display ? '0 0 4px rgba(217,119,6,0.6)' : 'none'
+                }}>★</span>
+              </span>
+            )}
         </span>
       ))}
+      {quantity && (`(${quantity})`)}
     </span>
   )
 }
@@ -102,42 +105,88 @@ function formatReadDate(date: string | null, t: (key: string) => string): string
    }
  }
 
-// â”€â”€â”€ ReviewCard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function ReviewCard({ 
+  review, 
+  t, 
+  currentUser,
+  onEdit,
+  onDelete
+}: { 
+  review: Review
+  t: (key: string, vars?: Record<string, unknown>) => string
+  currentUser?: string | null
+  onEdit?: (review: Review) => void
+  onDelete?: (reviewId: number) => void
+}) {
+    const isOwner = currentUser && currentUser === review.reviewer_name
 
-function ReviewCard({ review, t }: { review: Review; t: (key: string, vars?: Record<string, unknown>) => string }) {
-   return (
-     <div className="review-card">
-       <div className="review-header">
-         <div className="review-avatar">
-           {review.reviewer_name.slice(0, 2).toUpperCase()}
-         </div>
-         <div className="review-meta">
-           <span className="review-name">{review.reviewer_name}</span>
-           <span className="review-date">
-             {review.date_read
-               ? t('chronicle.readOn', { date: formatReadDate(review.date_read, t) })
-               : t('chronicle.readingDateUnknown')}
-           </span>
-         </div>
-         <div className="review-right">
-           <Stars rating={review.rating} />
-         </div>
-       </div>
-       {review.recommendation && (
-         <blockquote className="review-text">
-           "{review.recommendation}"
-         </blockquote>
-       )}
-       <div className="review-footer">
-         <span className="review-inscribed">
-           {t('chronicle.inscribedOn', { date: format(parseISO(review.created_at), "d MMM yyyy", { locale: fr }) })}
-         </span>
-       </div>
-     </div>
-    )
+    return (
+      <div className="review-card">
+        <div className="review-header">
+          <div className="review-avatar">
+            {review.reviewer_name.slice(0, 2).toUpperCase()}
+          </div>
+          <div className="review-meta">
+            <span className="review-name">{review.reviewer_name}</span>
+            <span className="review-date">
+              {review.date_read
+                ? t('chronicle.readOn', { date: formatReadDate(review.date_read, t) })
+                : t('chronicle.readingDateUnknown')}
+            </span>
+          </div>
+          <div className="review-right">
+            <Stars rating={parseFloat(review.rating ?? "0")} />
+            {isOwner && (
+              <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+                <button
+                  onClick={() => onEdit?.(review)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'rgba(217,119,6,0.7)',
+                    cursor: 'pointer',
+                    fontSize: '0.7rem',
+                    padding: '2px 4px',
+                    transition: 'color 0.2s'
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'rgba(217,119,6,1)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(217,119,6,0.7)')}
+                >
+                  ✎
+                </button>
+                <button
+                  onClick={() => onDelete?.(review.id)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'rgba(239,68,68,0.7)',
+                    cursor: 'pointer',
+                    fontSize: '0.7rem',
+                    padding: '2px 4px',
+                    transition: 'color 0.2s'
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'rgba(239,68,68,1)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(239,68,68,0.7)')}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        {review.recommendation && (
+          <blockquote className="review-text">
+            "{review.recommendation}"
+          </blockquote>
+        )}
+        <div className="review-footer">
+          <span className="review-inscribed">
+            {t('chronicle.inscribedOn', { date: format(parseISO(review.created_at), "d MMM yyyy", { locale: fr }) })}
+          </span>
+        </div>
+      </div>
+     )
 }
-
-// â"€â"€â"€ EditBookModal â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 const ALL_CATEGORIES = [
   'Novel', 'Essay', 'Sci-Fi', 'Fantasy', 'Thriller', 'Poetry', 'Manga', 'Comics', 
@@ -216,7 +265,7 @@ function EditBookModal({ book, onClose, onSaved, t }: {
         <h2 style={{ marginTop: 0, marginBottom: '1rem' }}>✎ Edit Book</h2>
 
         <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>
-          <span style={{ color: 'rgba(217,119,6,0.75)', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase' }}>{t('chronicle.title')}</span>
+          <span style={{ color: 'rgba(217,119,6,0.75)', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase' }}>{t('chronicle.bookTitle')}</span>
           <input 
             value={form.title}
             onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
@@ -324,8 +373,6 @@ function EditBookModal({ book, onClose, onSaved, t }: {
   )
 }
 
-// â"€â"€â"€ AddReviewForm â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
-
 function AddReviewForm({ bookId, onAdded, t, username }: { bookId: number; onAdded: () => void; t: (key: string) => string; username?: string }) {
    const [open, setOpen] = useState(false)
     const [form, setForm] = useState({
@@ -334,8 +381,35 @@ function AddReviewForm({ bookId, onAdded, t, username }: { bookId: number; onAdd
       recommendation: '',
     })
     const [loading, setLoading] = useState(false)
+    const [enriching, setEnriching] = useState(false)
     const [error, setError] = useState('')
     const [done, setDone] = useState(false)
+
+    const enrichTrace = async () => {
+      if (!form.recommendation.trim()) {
+        setError(t('chronicle.recommendation') + ' is required')
+        return
+      }
+      setEnriching(true)
+      setError('')
+      try {
+        const res = await fetch('/api/chronicle/enrich-trace', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recommendation: form.recommendation,
+          }),
+        })
+        if (!res.ok) throw new Error()
+        const data = await res.json()
+        setForm(f => ({ ...f, recommendation: data.enrichedRecommendation }))
+      } catch (err) {
+        setError('Failed to enrich trace')
+        console.error('Enrichment error:', err)
+      } finally {
+        setEnriching(false)
+      }
+    }
 
     const submit = async () => {
       if (!username) { setError(t('chronicle.nameRequired')); return }
@@ -362,7 +436,7 @@ function AddReviewForm({ bookId, onAdded, t, username }: { bookId: number; onAdd
       } finally {
        setLoading(false)
      }
-   }
+    }
 
    if (!open) {
      return (
@@ -406,29 +480,279 @@ function AddReviewForm({ bookId, onAdded, t, username }: { bookId: number; onAdd
             </div>
 
            <div style={{ marginBottom: 16 }}>
-             <label className="field-label">{t('chronicle.recommendation')}</label>
-             <textarea className="field-textarea"
-               placeholder={t('chronicle.whatYouThought')}
-               value={form.recommendation}
-               onChange={e => setForm(f => ({ ...f, recommendation: e.target.value }))}
-             />
-           </div>
+              <label className="field-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>{t('chronicle.recommendation')}</span>
+                <button 
+                  type="button"
+                  onClick={enrichTrace}
+                  disabled={enriching || !form.recommendation.trim()}
+                  style={{
+                    padding: '4px 12px',
+                    fontSize: '0.75rem',
+                    background: enriching ? 'rgba(217,119,6,0.3)' : 'rgba(217,119,6,0.6)',
+                    border: '1px solid rgba(217,119,6,0.5)',
+                    color: '#E8DCBE',
+                    cursor: enriching ? 'wait' : !form.recommendation.trim() ? 'not-allowed' : 'pointer',
+                    borderRadius: '2px',
+                    transition: 'all 0.2s',
+                    opacity: !form.recommendation.trim() ? 0.5 : 1,
+                  }}
+                  onMouseEnter={e => {
+                    if (!enriching && form.recommendation.trim()) {
+                      e.currentTarget.style.background = 'rgba(217,119,6,0.8)'
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = enriching ? 'rgba(217,119,6,0.3)' : 'rgba(217,119,6,0.6)'
+                  }}
+                >
+                  {enriching ? '✨ Enriching...' : '✨ Enrich'}
+                </button>
+              </label>
+              <textarea className="field-textarea"
+                placeholder={t('chronicle.whatYouThought')}
+                value={form.recommendation}
+                onChange={e => setForm(f => ({ ...f, recommendation: e.target.value }))}
+              />
+            </div>
 
-           {error && <p className="form-error">{error}</p>}
+            {error && <p className="form-error">{error}</p>}
 
-           <div className="form-actions">
-             <button className="modal-cancel" onClick={() => setOpen(false)}>{t('chronicle.cancel')}</button>
-             <button className="modal-submit" onClick={submit} disabled={loading}>
-               {loading ? t('chronicle.submitting') : t('chronicle.carveInTome')}
-             </button>
-           </div>
+            <div className="form-actions">
+              <button className="modal-cancel" onClick={() => setOpen(false)}>{t('chronicle.cancel')}</button>
+              <button className="modal-submit" onClick={submit} disabled={loading || enriching}>
+                {loading ? t('chronicle.submitting') : t('chronicle.carveInTome')}
+              </button>
+            </div>
          </>
        )}
      </div>
-   )
+    )
 }
 
-// â”€â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// — EditTraceModal ————————————————————————————————————————————————————————————————————————————
+
+function EditTraceModal({ 
+  review, 
+  onClose, 
+  onSaved, 
+  t 
+}: { 
+  review: Review
+  onClose: () => void
+  onSaved: () => void
+  t: (key: string) => string
+}) {
+  const [form, setForm] = useState({
+    date_read: review.date_read || '',
+    rating: review.rating || 0,
+    recommendation: review.recommendation || '',
+  })
+  const [loading, setLoading] = useState(false)
+  const [enriching, setEnriching] = useState(false)
+  const [error, setError] = useState('')
+
+  const enrichTrace = async () => {
+    if (!form.recommendation.trim()) {
+      setError(t('chronicle.recommendation') + ' is required')
+      return
+    }
+    setEnriching(true)
+    setError('')
+    try {
+      const res = await fetch('/api/chronicle/enrich-trace', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recommendation: form.recommendation,
+        }),
+      })
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      setForm(f => ({ ...f, recommendation: data.enrichedRecommendation }))
+    } catch (err) {
+      setError('Failed to enrich trace')
+      console.error('Enrichment error:', err)
+    } finally {
+      setEnriching(false)
+    }
+  }
+
+  const handleSubmit = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/chronicle/reviews/${review.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date_read: form.date_read || null,
+          rating: form.rating || null,
+          recommendation: form.recommendation,
+        }),
+      })
+      if (!res.ok) throw new Error()
+      onSaved()
+      onClose()
+    } catch {
+      setError(t('chronicle.spellFailed'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      backgroundColor: 'rgba(0,0,0,0.7)',
+      zIndex: 1000,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }} onClick={onClose}>
+      <div style={{
+        backgroundColor: '#06040C',
+        border: '1px solid rgba(232,220,190,0.1)',
+        borderRadius: '4px',
+        padding: '2rem',
+        maxWidth: '500px',
+        width: '90%',
+        maxHeight: '90vh',
+        overflow: 'auto',
+        color: '#E8DCBE',
+        fontFamily: "'IM Fell English', serif"
+      }} onClick={e => e.stopPropagation()}>
+        <h2 style={{ marginTop: 0, marginBottom: '1rem' }}>✎ Edit Trace</h2>
+
+        <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>
+          <span style={{ color: 'rgba(217,119,6,0.75)', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase' }}>{t('chronicle.readingDate')}</span>
+          <input 
+            type="month"
+            value={form.date_read}
+            onChange={e => setForm(f => ({ ...f, date_read: e.target.value }))}
+            style={{
+              width: '100%',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(232,220,190,0.18)',
+              color: '#E8DCBE',
+              padding: '8px',
+              marginTop: '4px',
+              borderRadius: '2px'
+            }}
+          />
+        </label>
+
+        <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>
+          <span style={{ color: 'rgba(217,119,6,0.75)', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase' }}>{t('chronicle.rating')}</span>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '4px' }}>
+            <Stars rating={parseFloat(form.rating.toString() ?? "0") } interactive onSet={n => setForm(f => ({ ...f, rating: n }))} />
+            <input 
+              type="number" 
+              step="0.1" 
+              min="0" 
+              max="5"
+              placeholder="0.0"
+              value={form.rating || ''} 
+              onChange={e => setForm(f => ({ ...f, rating: e.target.value ? parseFloat(e.target.value) : 0 }))}
+              style={{
+                width: '80px',
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(232,220,190,0.18)',
+                color: '#E8DCBE',
+                padding: '8px',
+                borderRadius: '2px'
+              }}
+            />
+          </div>
+        </label>
+
+         <label style={{ display: 'block', marginBottom: '12px', fontSize: '0.9rem' }}>
+           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+             <span style={{ color: 'rgba(217,119,6,0.75)', fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase' }}>{t('chronicle.recommendation')}</span>
+             <button 
+               type="button"
+               onClick={enrichTrace}
+               disabled={enriching || !form.recommendation.trim()}
+               style={{
+                 padding: '4px 12px',
+                 fontSize: '0.75rem',
+                 background: enriching ? 'rgba(217,119,6,0.3)' : 'rgba(217,119,6,0.6)',
+                 border: '1px solid rgba(217,119,6,0.5)',
+                 color: '#E8DCBE',
+                 cursor: enriching ? 'wait' : !form.recommendation.trim() ? 'not-allowed' : 'pointer',
+                 borderRadius: '2px',
+                 transition: 'all 0.2s',
+                 opacity: !form.recommendation.trim() ? 0.5 : 1,
+               }}
+               onMouseEnter={e => {
+                 if (!enriching && form.recommendation.trim()) {
+                   e.currentTarget.style.background = 'rgba(217,119,6,0.8)'
+                 }
+               }}
+               onMouseLeave={e => {
+                 e.currentTarget.style.background = enriching ? 'rgba(217,119,6,0.3)' : 'rgba(217,119,6,0.6)'
+               }}
+             >
+               {enriching ? '✨ Enriching...' : '✨ Enrich'}
+             </button>
+           </div>
+           <textarea 
+             value={form.recommendation}
+             onChange={e => setForm(f => ({ ...f, recommendation: e.target.value }))}
+             style={{
+               width: '100%',
+               background: 'rgba(255,255,255,0.03)',
+               border: '1px solid rgba(232,220,190,0.18)',
+               color: '#E8DCBE',
+               padding: '8px',
+               marginTop: '4px',
+               borderRadius: '2px',
+               fontFamily: "'IM Fell English', serif",
+               minHeight: '90px',
+               resize: 'vertical'
+             }}
+           />
+          </label>
+
+         {error && <p style={{ color: 'rgba(220,80,80,0.9)', fontSize: '0.9rem', marginBottom: '12px' }}>{error}</p>}
+
+         <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
+           <button 
+             onClick={onClose}
+             style={{
+               padding: '8px 16px',
+               background: 'transparent',
+               border: '1px solid rgba(232,220,190,0.1)',
+               color: 'rgba(232,220,190,0.7)',
+               cursor: 'pointer',
+               borderRadius: '2px'
+             }}
+           >
+             {t('chronicle.cancel')}
+           </button>
+           <button 
+             onClick={handleSubmit}
+             disabled={loading || enriching}
+             style={{
+               padding: '8px 20px',
+               background: 'linear-gradient(135deg, #D97706, #92400E)',
+               border: 'none',
+               color: '#06040C',
+               cursor: loading || enriching ? 'not-allowed' : 'pointer',
+               borderRadius: '2px',
+               opacity: loading || enriching ? 0.5 : 1
+             }}
+           >
+             {loading ? t('chronicle.submitting') : 'Save'}
+           </button>
+         </div>
+       </div>
+     </div>
+   )
+ }
+
+ // — Main —————————————————————————————————————————————————————————————————————————————————————————
 
 export default function BookPage() {
    const { t } = useI18n()
@@ -441,10 +765,24 @@ export default function BookPage() {
   const [loading, setLoading] = useState(true)
   const [imgErr, setImgErr] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [editingTrace, setEditingTrace] = useState<Review | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
+
+  const handleDeleteTrace = async (reviewId: number) => {
+    if (!confirm(t('chronicle.confirmDeleteTrace'))) return
+    try {
+      const res = await fetch(`/api/chronicle/reviews/${reviewId}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) throw new Error()
+      fetchBook()
+    } catch {
+      alert(t('chronicle.spellFailed'))
+    }
+  }
 
   const fetchBook = async () => {
     try {
@@ -462,9 +800,12 @@ export default function BookPage() {
 
   if (status === 'loading' || status === 'unauthenticated') return null
 
-  const avgRating = book?.reviews.length
-    ? book.reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / book.reviews.filter(r => r.rating).length
-    : null
+const validReviews = book?.reviews.filter(r => 
+    r.rating != null && r.rating !== '' && !isNaN(parseFloat(r.rating))
+) || [];
+const avgRating = validReviews.length
+    ? validReviews.reduce((sum, r) => sum + parseFloat(r.rating ?? "0"), 0) / validReviews.length
+    : null;
 
   return (
     <>
@@ -1006,7 +1347,7 @@ export default function BookPage() {
                     ? <img src={book.image_url} alt={book.title} onError={() => setImgErr(true)} />
                     : (
                       <div className="cover-placeholder-hero">
-                        <span className="p-sigil">ðŸ“–</span>
+                        <span className="p-sigil">༒︎</span>
                         <span className="p-title">{book.title}</span>
                       </div>
                     )
@@ -1035,32 +1376,29 @@ export default function BookPage() {
                 </div>
                 <p className="book-hero-author">{book.author}</p>
 
+{validReviews.length > 0 && (
+          <div className="hero-avg">
+            <span className="hero-avg-num">{avgRating?.toFixed(1)}</span>
+            <div>
+              <Stars rating={Math.round(avgRating ?? 0)} quantity={validReviews.length}/>
+            </div>
+          </div>
+        )}
+
                 {book.reviews.length > 0 && (
-                  <div className="hero-avg">
-                    <span className="hero-avg-num">{avgRating?.toFixed(1)}</span>
-                    <div>
-                      <Stars rating={Math.round(avgRating ?? 0)} />
-                       <div className="hero-avg-label">
-                         {book.reviews.filter(r => r.rating).length} {book.reviews.filter(r => r.rating).length !== 1 ? t('chronicle.ratedBy') : t('chronicle.ratedBy').slice(0, -1)}
-                       </div>
-                    </div>
+                  <div className="hero-readers">
+                    <span className="hero-reader-label">{t('chronicle.readBy')}</span>
+                    {[...new Set(book.reviews.map(r => r.reviewer_name))].map((name, i) => (
+                      <div key={i} className="reader-bubble-lg" title={name}>
+                        {name.slice(0, 2).toUpperCase()}
+                      </div>
+                    ))}
                   </div>
                 )}
 
-                 {book.reviews.length > 0 && (
-                   <div className="hero-readers">
-                     <span className="hero-reader-label">{t('chronicle.readBy')}</span>
-                     {[...new Set(book.reviews.map(r => r.reviewer_name))].map((name, i) => (
-                       <div key={i} className="reader-bubble-lg" title={name}>
-                         {name.slice(0, 2).toUpperCase()}
-                       </div>
-                     ))}
-                   </div>
-                 )}
-
-                 <div className="hero-added">
-                   {t('chronicle.inscribedBy')} {book.added_by}
-                 </div>
+                <div className="hero-added">
+                  {t('chronicle.inscribedBy')} {book.added_by}
+                </div>
               </div>
             </div>
 
@@ -1074,24 +1412,40 @@ export default function BookPage() {
                 <AddReviewForm bookId={book.id} onAdded={fetchBook} t={t} username={session?.user?.name || undefined} />
 
                {book.reviews.length === 0 ? (
-                 <p className="no-reviews">
-                   {t('chronicle.noTraces')}
-                 </p>
-                ) : (
-                  book.reviews.map(review => (
-                    <ReviewCard key={review.id} review={review} t={t as (key: string, vars?: Record<string, unknown>) => string} />
-                  ))
-                 )}
-              </div>
-              
-              {showEditModal && book && (
-                <EditBookModal 
-                  book={book} 
-                  onClose={() => setShowEditModal(false)} 
-                  onSaved={fetchBook} 
-                  t={t}
-                />
-              )}
+                  <p className="no-reviews">
+                    {t('chronicle.noTraces')}
+                  </p>
+                 ) : (
+                   book.reviews.map(review => (
+                     <ReviewCard 
+                       key={review.id} 
+                       review={review} 
+                       t={t as (key: string, vars?: Record<string, unknown>) => string}
+                       currentUser={session?.user?.name}
+                       onEdit={setEditingTrace}
+                       onDelete={handleDeleteTrace}
+                     />
+                   ))
+                  )}
+               </div>
+               
+               {showEditModal && book && (
+                 <EditBookModal 
+                   book={book} 
+                   onClose={() => setShowEditModal(false)} 
+                   onSaved={fetchBook} 
+                   t={t}
+                 />
+               )}
+
+               {editingTrace && (
+                 <EditTraceModal 
+                   review={editingTrace}
+                   onClose={() => setEditingTrace(null)}
+                   onSaved={fetchBook}
+                   t={t}
+                 />
+               )}
            </>
          )}
        </div>

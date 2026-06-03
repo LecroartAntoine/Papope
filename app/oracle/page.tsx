@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useI18n } from '@/lib/i18n/context'
 
-// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const STARS = Array.from({ length: 120 }, (_, i) => ({
   x: (i * 137.508 + 23) % 100,
@@ -13,8 +12,6 @@ const STARS = Array.from({ length: 120 }, (_, i) => ({
   dur: 2 + (i % 5),
   delay: (i % 11) * 0.3,
 }))
-
-// â”€â”€â”€ Free APIs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function fetchIngredients() {
   const [advice, fact, bored] = await Promise.allSettled([
@@ -26,9 +23,9 @@ async function fetchIngredients() {
       .then(r => r.json()).then(d => d.value ?? ''),
   ])
   return {
-    advice: advice.status === 'fulfilled' ? advice.value : 'existence precedes essence',
-    fact: fact.status === 'fulfilled' ? fact.value : 'the universe is mostly empty space',
-    activity: bored.status === 'fulfilled' ? bored.value : 'contemplate the void',
+    advice: advice.status === 'fulfilled' ? advice.value : '',
+    fact: fact.status === 'fulfilled' ? fact.value : '',
+    activity: bored.status === 'fulfilled' ? bored.value : '',
   }
 }
 
@@ -44,8 +41,6 @@ async function callOracle(question: string, ingredients: { advice: string; fact:
   
   return await res.json()
 }
-
-// â”€â”€â”€ Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Starfield() {
   return (
@@ -139,26 +134,26 @@ export default function OraclePage() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const THINKING_MSGS = [
-    'Consultation de 7.5 million annÃ©es de sagesse',
-    'Pause cafÃ©',
-    "Ã‰valuation de la rÃ©trogradicitÃ© de Mercure",
-    "Lecture de l'astronomie pour les nuls",
-    'Recherche approfondi de la recette du Gloubi-boulga',
-    'Fabrication du cerceuil lunaire',
-    'Probablement bientÃ´t fini si je veux',
+    'oracle.thinking1',
+    'oracle.thinking2',
+    'oracle.thinking3',
+    'oracle.thinking4',
+    'oracle.thinking5',
+    'oracle.thinking6',
+    'oracle.thinking7',
   ]
 
 
   useEffect(() => {
     if (phase !== 'thinking') return
     let i = 0
-    setThinkingMsg(THINKING_MSGS[0])
-    const t = setInterval(() => {
+    setThinkingMsg(t(THINKING_MSGS[0]))
+    const interval = setInterval(() => {
       i = (i + 1) % THINKING_MSGS.length
-      setThinkingMsg(THINKING_MSGS[i])
+      setThinkingMsg(t(THINKING_MSGS[i]))
     }, 1800)
-    return () => clearInterval(t)
-  }, [phase])
+    return () => clearInterval(interval)
+  }, [phase, t])
 
   const consult = useCallback(async () => {
     if (phase === 'thinking') return
@@ -414,7 +409,7 @@ export default function OraclePage() {
           to   { opacity: 1; transform: translateY(0); }
         }
         .prophecy-wrap::before, .prophecy-wrap::after {
-          content: 'âœ¦';
+          content: '⊕';
           position: absolute;
           font-size: 10px;
           color: rgba(200,160,60,0.85);
@@ -576,17 +571,17 @@ export default function OraclePage() {
                 color: 'rgba(180,140,60,0.9)', letterSpacing: '0.1em',
                 marginBottom: '1rem', fontStyle: 'italic', textAlign: 'center',
                 maxWidth: 420 }}>
-                re: "{question.length > 80 ? question.slice(0, 80) + 'â€¦' : question}"
+                 {t('oracle.re')} "{question.length > 80 ? question.slice(0, 80) + '…' : question}"
               </div>
             )}
             <div className="prophecy-wrap">
-               <div className="prophecy-label">âˆ´ Oracle Reading #{consultCount} âˆ´</div>
+                <div className="prophecy-label">{t('oracle.readingLabel', { n: consultCount })}</div>
                <p className="prophecy-text">
                  <TypewriterText text={prophecy} speed={16} />
                </p>
                {ingredients && (
                  <div className="prophecy-footer">
-                   <button className="again-btn" onClick={reset}>Next Reading â†’</button>
+                   <button className="again-btn" onClick={reset}>{t("oracle.nextReading")}</button>
                  </div>
                )}
              </div>
@@ -609,7 +604,7 @@ export default function OraclePage() {
            </div>
          )}
 
-         <a href="/" className="bottom-nav">â† back to home</a>
+         <a href="/" className="bottom-nav">{t("oracle.backToHome")}</a>
       </div>
     </>
   )

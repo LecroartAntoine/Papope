@@ -16,7 +16,7 @@ export default function HomePage() {
     return () => clearTimeout(timer)
   }, [])
 
-  const PUBLIC_SECTIONS = [
+  const ALL_SECTIONS  = [
     {
       href: '/oracle',
       emoji: '🔮',
@@ -31,9 +31,6 @@ export default function HomePage() {
       desc: t('homepage.gamesDescription'),
       section: null, // public
     },
-  ]
-
-  const PRIVATE_SECTIONS = [
     {
       href: '/chronicle',
       emoji: '📖',
@@ -64,9 +61,6 @@ export default function HomePage() {
     if (!isAuthenticated) return false
     return session?.user?.sections?.includes(section) ?? false
   }
-
-  // Only show private sections that user has access to
-  const accessiblePrivateSections = PRIVATE_SECTIONS.filter((s) => hasAccess(s.section))
 
   return (
     <>
@@ -103,29 +97,15 @@ export default function HomePage() {
           letter-spacing: -0.02em;
         }
 
-        .section-group {
-          margin-bottom: 3rem;
-          animation: fadeInUp 0.6s ease-out;
-          animation-delay: 0.2s;
-          animation-fill-mode: both;
-        }
-
-        .section-label {
-          font-family: 'Space Mono', monospace;
-          font-size: 0.7rem;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: rgba(240, 237, 230, 0.6);
-          margin-bottom: 1.2rem;
-          padding-bottom: 0.8rem;
-          border-bottom: 1px solid rgba(200, 241, 53, 0.2);
-        }
-
         .cards-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
           gap: 1.5rem;
           width: 100%;
+          margin-bottom: 3rem;
+          animation: fadeInUp 0.6s ease-out;
+          animation-delay: 0.2s;
+          animation-fill-mode: both;
         }
 
         .card {
@@ -172,33 +152,41 @@ export default function HomePage() {
         .card-locked {
           display: flex;
           flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 2rem 1.5rem;
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          padding: 1.5rem;
+          background: rgba(255, 255, 255, 0.015);
+          border: 1px solid rgba(255, 255, 255, 0.05);
           border-radius: 6px;
-          text-align: center;
-          color: rgba(240, 237, 230, 0.55);
+          color: rgba(240, 237, 230, 0.35);
           cursor: not-allowed;
+          position: relative;
         }
 
-        .locked-icon {
-          font-size: 2rem;
-          margin-bottom: 0.5rem;
+        .card-locked .card-emoji {
+          opacity: 0.4;
         }
 
-        .locked-text {
-          font-family: 'Space Mono', monospace;
-          font-size: 0.8rem;
-          margin: 0;
+        .card-locked .card-title {
+          opacity: 0.4;
         }
 
-        .private-cta {
+        .card-locked .card-desc {
+          opacity: 0.4;
+          color: rgba(240, 237, 230, 0.35);
+        }
+
+        .locked-badge {
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          font-size: 0.85rem;
+          opacity: 0.5;
+        }
+
+        .home-actions {
           display: flex;
           justify-content: center;
           gap: 1rem;
-          margin-top: 2rem;
+          margin-bottom: 2rem;
           animation: fadeInUp 0.6s ease-out;
           animation-delay: 0.4s;
           animation-fill-mode: both;
@@ -239,7 +227,7 @@ export default function HomePage() {
 
         .home-footer {
           text-align: center;
-          margin-top: 3rem;
+          margin-top: 1rem;
           font-family: 'Space Mono', monospace;
           font-size: 0.7rem;
           color: rgba(240, 237, 230, 0.4);
@@ -267,10 +255,6 @@ export default function HomePage() {
           .home-header {
             margin-bottom: 2rem;
           }
-
-          .section-group {
-            margin-bottom: 2rem;
-          }
         }
       `}</style>
 
@@ -284,64 +268,48 @@ export default function HomePage() {
             <LanguageSelector />
           </div>
 
-          {/* Public Sections */}
-          <div className="section-group">
-            <div className="section-label">PUBLIC</div>
-            <div className="cards-grid">
-              {PUBLIC_SECTIONS.map((section) => (
-                <Link key={section.href} href={section.href} className="card">
+          {/* All Sections */}
+          <div className="cards-grid">
+            {ALL_SECTIONS.map((section) => {
+              const accessible = hasAccess(section.section)
+              if (accessible) {
+                return (
+                  <Link key={section.href} href={section.href} className="card">
+                    <div className="card-emoji">{section.emoji}</div>
+                    <h2 className="card-title">{section.title}</h2>
+                    <p className="card-desc">{section.desc}</p>
+                  </Link>
+                )
+              }
+              // Not accessible (either not authenticated or no access)
+              return (
+                <div key={section.section} className="card-locked">
+                  <div className="locked-badge">🔒</div>
                   <div className="card-emoji">{section.emoji}</div>
                   <h2 className="card-title">{section.title}</h2>
                   <p className="card-desc">{section.desc}</p>
-                </Link>
-              ))}
-            </div>
+                </div>
+              )
+            })}
           </div>
 
-          {/* Private Sections */}
-          <div className="section-group">
-            <div className="section-label">{t('homepage.private')}</div>
-            <div className="cards-grid">
-              {status === 'authenticated' && accessiblePrivateSections.length > 0
-                ? accessiblePrivateSections.map((section) => (
-                    <Link key={section.href} href={section.href} className="card">
-                      <div className="card-emoji">{section.emoji}</div>
-                      <h2 className="card-title">{section.title}</h2>
-                      <p className="card-desc">{section.desc}</p>
-                    </Link>
-                  ))
-                : PRIVATE_SECTIONS.map((section) => (
-                    <div key={section.section} className="card-locked">
-                      <div className="locked-icon">🔒</div>
-                      <div className="locked-text">{section.title}</div>
-                    </div>
-                  ))}
+          {/* Login CTA for unauthenticated users */}
+          {!isAuthenticated && (
+            <div className="home-actions">
+              <Link href="/login" className="btn">
+                {t('login.signIn')}
+              </Link>
             </div>
+          )}
 
-            {status !== 'authenticated' && (
-              <div className="private-cta">
-                <Link href="/login" className="btn">
-                  {t('login.signIn')}
-                </Link>
-              </div>
-            )}
-
-            {status === 'authenticated' && accessiblePrivateSections.length < PRIVATE_SECTIONS.length && (
-              <div className="private-cta">
-                <p style={{ fontSize: '0.8rem', color: 'rgba(240, 237, 230, 0.4)', margin: 0 }}>
-                  {t('homepage.accessLimited', { n: accessiblePrivateSections.length })}
-                </p>
-              </div>
-            )}
-
-            {status === 'authenticated' && session?.user?.isAdmin && (
-              <div className="private-cta" style={{ marginTop: '1rem' }}>
-                <Link href="/admin" className="btn secondary">
-                  Administration
-                </Link>
-              </div>
-            )}
-          </div>
+          {/* Admin link */}
+          {isAuthenticated && session?.user?.isAdmin && (
+            <div className="home-actions">
+              <Link href="/admin" className="btn secondary">
+                Administration
+              </Link>
+            </div>
+          )}
 
           <div className="home-footer">
             {t('homepage.footer')}

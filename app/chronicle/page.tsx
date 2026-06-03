@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useI18n } from '@/lib/i18n/context'
+import { BookOpen } from 'lucide-react'
 import styles from './chronicle.module.css'
 
 // --- Types ----------------------------------------------------------------
@@ -21,6 +22,8 @@ type Book = {
   avg_rating: number | null
   readers: string[]
 }
+
+type SortBy = 'title' | 'author' | 'date_added' | 'rating' | 'readers'
 
 const ALL_CATEGORIES = [
   'Novel', 'Essay', 'Sci-Fi', 'Fantasy', 'Thriller', 'Poetry', 'Manga', 'Comics', 
@@ -153,14 +156,14 @@ function AddBookModal({ onClose, onAdded, t, username }: { onClose: () => void; 
   }
 
    return (
-      <div className={styles['modal-backdrop']} onClick={onClose}>
+      <div className={styles['modal-backdrop']}>
         <div className={styles['modal-box']} onClick={e => e.stopPropagation()}>
           <div className={styles['modal-rune']}>✨</div>
           <h2 className={styles['modal-title']}>{t('chronicle.inscribeGrimoire')}</h2>
           <p className={styles['modal-sub']}>{t('chronicle.eachBookIsSpell')}</p>
 
           <div className={styles['modal-fields']}>
-            <label className={styles['field-label']}>{t('chronicle.title')}</label>
+            <label className={styles['field-label']}>{t('chronicle.bookTitle')}</label>
             <input 
               className={styles['field-input']} 
               placeholder={t('chronicle.tomeNamePlaceholder')}
@@ -237,6 +240,7 @@ export default function ChroniclePage() {
    const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
    const [showAdd, setShowAdd] = useState(false)
    const [search, setSearch] = useState('')
+   const [sortBy, setSortBy] = useState<SortBy>('date_added')
 
   const fetchBooks = async () => {
     setLoading(true)
@@ -261,34 +265,61 @@ export default function ChroniclePage() {
       b.title.toLowerCase().includes(search.toLowerCase()) ||
       b.author.toLowerCase().includes(search.toLowerCase())
     return matchCat && matchSearch
+  }).sort((a, b) => {
+    switch(sortBy) {
+      case 'title':
+        return a.title.localeCompare(b.title)
+      case 'author':
+        return a.author.localeCompare(b.author)
+      case 'date_added':
+        return new Date(b.added_at).getTime() - new Date(a.added_at).getTime()
+      case 'rating':
+        return (b.avg_rating ?? 0) - (a.avg_rating ?? 0)
+      case 'readers':
+        return b.readers.length - a.readers.length
+      default:
+        return 0
+    }
   })
 
   return (
     <>
       <div className={styles['chronicle-root']}>
+        {/* Moon background */}
+        <div 
+          className={styles.moon}
+          style={{
+            backgroundImage: 'url(/images/moon.png)',
+          }}
+        />
+
         {/* Stars background */}
         <div className={styles['chronicle-stars']}>
-          {Array.from({ length: 80 }, (_, i) => ({
-            x: (i * 137.5 + 23) % 100,
-            y: (i * 97.3 + 11) % 100,
-            size: i % 5 === 0 ? 1.5 : 1,
-            op: 0.15 + (i % 7) * 0.08,
-            dur: 2 + (i % 5),
-          })).map((s, i) => (
-            <div 
-              key={i} 
-              className={styles.cstar} 
-              style={{
-                left: `${s.x}%`, 
-                top: `${s.y}%`,
-                width: s.size, 
-                height: s.size,
-                ['--op' as string]: s.op,
-                animationDuration: `${s.dur}s`,
-                animationDelay: `${(i * 0.3) % 5}s`,
-              }} 
-            />
-          ))}
+          {Array.from({ length: 120 }, (_, i) => {
+            // Better random distribution using seeded pseudo-random
+            const seed = i * 73856093 ^ 19349663;
+            const x = ((seed ^ (seed >> 16)) % 10000) / 100;
+            const y = (((seed * 73) ^ (seed >> 24)) % 10000) / 100;
+            const size = (seed % 7 < 2) ? 1.8 : (seed % 7 < 5) ? 1.2 : 0.8;
+            const op = 0.1 + ((seed % 13) / 20);
+            const dur = 2 + ((seed % 6) / 2);
+            
+            return (
+              <div 
+                key={i} 
+                className={styles.cstar} 
+                style={{
+                  left: `${x}%`, 
+                  top: `${y}%`,
+                  width: size, 
+                  height: size,
+                  ['--op' as string]: op,
+                  animationDuration: `${dur}s`,
+                  animationDelay: `${(seed % 50) / 10}s`,
+                }} 
+              />
+            );
+          })}
         </div>
 
         <div className={styles.mist} />
@@ -300,12 +331,10 @@ export default function ChroniclePage() {
 
          {/* Header */}
          <header className={styles['chronicle-header']}>
-           <div className={styles['header-eyebrow']}>{t('chronicle.readingCircle')}</div>
            <h1 className={styles['chronicle-wordmark']}>{t('chronicle.theChronicle')}</h1>
            <div className={styles['chronicle-divider']}>
              <span>{t('chronicle.collectiveGrimoire')}</span>
            </div>
-           <p className={styles['header-sub']}>{t('chronicle.description')}</p>
          </header>
 
          {/* Toolbar */}
@@ -318,6 +347,20 @@ export default function ChroniclePage() {
                value={search}
                onChange={e => setSearch(e.target.value)}
              />
+           </div>
+           <div className={styles['sort-wrap']}>
+             <label className={styles['sort-label']}>{t('chronicle.sortBy') || 'Sort'}</label>
+             <select 
+               className={styles['sort-select']}
+               value={sortBy}
+               onChange={e => setSortBy(e.target.value as SortBy)}
+             >
+               <option value="date_added">📅 {t('chronicle.dateAdded') || 'Date Added'}</option>
+               <option value="title">📖 {t('chronicle.bookTitle') || 'Title'}</option>
+               <option value="author">✍️ {t('chronicle.author') || 'Author'}</option>
+               <option value="rating">⭐ {t('chronicle.rating') || 'Rating'}</option>
+               <option value="readers">👥 {t('chronicle.readers') || 'Most Read'}</option>
+             </select>
            </div>
            <button className={styles['add-btn']} onClick={() => setShowAdd(true)}>
              {t('chronicle.registerBook')}
@@ -376,16 +419,22 @@ export default function ChroniclePage() {
             )
         }
 
-          {/* Add book modal */}
-          {showAdd && (
-            <AddBookModal
-              onClose={() => setShowAdd(false)}
-              onAdded={fetchBooks}
-              t={t}
-              username={session?.user?.name || undefined}
-            />
-          )}
-      </div>
-    </>
-  )
-}
+           {/* Add book modal */}
+           {showAdd && (
+             <AddBookModal
+               onClose={() => setShowAdd(false)}
+               onAdded={fetchBooks}
+               t={t}
+               username={session?.user?.name || undefined}
+             />
+           )}
+
+           {/* Floating Librarian Button */}
+           <Link href="/chronicle/librarian" className={styles['librarian-fab']}>
+             <BookOpen size={20} />
+             <span className={styles['fab-label']}>{t('librarian.title')}</span>
+           </Link>
+       </div>
+     </>
+   )
+ }

@@ -79,7 +79,7 @@ export async function PUT(
         title = ${title.trim()},
         author = ${author.trim()},
         image_url = ${image_url?.trim() || null},
-        categories = ${JSON.stringify(catArray)}
+        categories = ${catArray as any}
       WHERE id = ${bookId}
     `
 

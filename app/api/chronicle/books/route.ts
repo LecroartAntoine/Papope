@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
         ${title.trim()},
         ${author.trim()},
         ${image_url?.trim() || null},
-        ${JSON.stringify(catArray)},
+        ${catArray  as any},
         ${added_by.trim()}
       )
       RETURNING id
