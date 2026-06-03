@@ -67,7 +67,13 @@ export const translations = {
       welcome: "Home Page",
       disconnect :"Log Out",
       create : "Create a User",
-      cancel : "Cancel"
+      cancel : "Cancel",
+      accesses : "Access",
+      manageAccess : "Manage User Access",
+      user: 'User',
+      saving : "Saving...",
+      save : "Save",
+      close: "Close"
     },
 
     keeppushing: {
@@ -466,7 +472,13 @@ export const translations = {
       welcome: "Acceuil",
       disconnect :"Déconnexion",
       create : "Créer un Utilisateur",
-      cancel : "Annuler"
+      cancel : "Annuler",
+      accesses : "Accès",
+      manageAccess : "Gérer les accès de l'utilisateur",
+      user: 'Utilisateur',
+      saving : "Sauvegarde...",
+      save : "Sauvegarder",
+      close: "Fermer"
     },
 
     keeppushing: {

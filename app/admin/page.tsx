@@ -413,6 +413,7 @@ export default function AdminPage() {
           {/* Header */}
           <div className="admin-header">
             <h1 className="admin-title">{t("admin.title")}</h1>
+            <h3 className="admin-subtitle">{t("admin.subtitle")}</h3>
             <div className="admin-actions">
               <button className="admin-btn secondary" onClick={() => router.push('/')}>
                 {t("admin.welcome")}
@@ -502,17 +503,17 @@ export default function AdminPage() {
               <table className="users-table">
                 <thead>
                   <tr>
-                    <th>Nom</th>
+                    <th>{t("admin.username")}</th>
                     <th>Admin</th>
-                    <th>CrÃ©Ã© le</th>
-                    <th>Actions</th>
+                    <th>{t("admin.createdAt")}</th>
+                    <th>{t("admin.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((user) => (
                     <tr key={user.id}>
                       <td>{user.username}</td>
-                      <td>{user.is_admin ? 'âœ“' : 'â€“'}</td>
+                      <td>{user.is_admin ? "✅" : "❌"}</td>
                       <td style={{ fontSize: '0.85rem', color: 'rgba(240, 237, 230, 0.6)' }}>
                         {new Date(user.created_at).toLocaleDateString('fr-FR')}
                       </td>
@@ -521,14 +522,14 @@ export default function AdminPage() {
                           className="user-row-btn"
                           onClick={() => handleSelectUser(user.id)}
                         >
-                          AccÃ¨s
+                          {t("admin.accesses")}
                         </button>
                         {session?.user?.id !== String(user.id) && (
                           <button
                             className="user-row-btn danger"
                             onClick={() => handleDeleteUser(user.id)}
                           >
-                            Supprimer
+                            {t("admin.delete")}
                           </button>
                         )}
                       </td>
@@ -542,13 +543,12 @@ export default function AdminPage() {
           {/* Access Section */}
           {selectedUserId !== null && (
             <div className="admin-section">
-              <h2 className="section-title">ðŸ” GÃ©rer les accÃ¨s</h2>
+              <h2 className="section-title">{t("admin.manageAccess")}</h2>
               <div className="access-panel">
                 <p style={{ marginBottom: '1rem', color: 'rgba(240, 237, 230, 0.7)' }}>
-                  Utilisateur: <strong>{users.find((u) => u.id === selectedUserId)?.username}</strong>
+                  {t("admin.user")}: <strong>{users.find((u) => u.id === selectedUserId)?.username}</strong>
                 </p>
 
-                <label className="form-label">Sections disponibles</label>
                 <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1rem', borderRadius: '4px' }}>
                   {AVAILABLE_SECTIONS.map((section) => (
                     <div key={section} className="checkbox-item">
@@ -576,14 +576,14 @@ export default function AdminPage() {
                     onClick={handleSaveAccess}
                     disabled={savingAccess}
                   >
-                    {savingAccess ? 'Sauvegarde...' : 'Sauvegarder'}
+                    {savingAccess ? t("admin.saving") :  t("admin.save")}
                   </button>
                   <button
                     className="admin-btn secondary"
                     onClick={() => setSelectedUserId(null)}
                     disabled={savingAccess}
                   >
-                    Fermer
+                    {t("admin.close")}
                   </button>
                 </div>
               </div>
