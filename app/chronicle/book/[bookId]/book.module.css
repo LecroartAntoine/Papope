@@ -1,0 +1,819 @@
+/* book.module.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Inconsolata:wght@400;500&display=swap');
+
+:global(*) { 
+  box-sizing: border-box; 
+}
+
+.bookRoot { 
+  min-height: 100vh; 
+  background: #06040C; 
+  color: #E8DCBE; 
+  font-family: 'IM Fell English', serif; 
+  padding-bottom: 5rem; 
+  position: relative; 
+  overflow-x: hidden; 
+}
+
+.bookMist { 
+  position: fixed; 
+  inset: 0; 
+  pointer-events: none; 
+  background: radial-gradient(ellipse 60% 40% at 30% 10%, rgba(76,29,149,0.12) 0%, transparent 65%), radial-gradient(ellipse 40% 30% at 80% 80%, rgba(217,119,6,0.06) 0%, transparent 60%); 
+}
+
+.bookStars { 
+  position: fixed; 
+  inset: 0; 
+  pointer-events: none; 
+  overflow: hidden; 
+}
+
+.bstar { 
+  position: absolute; 
+  border-radius: 50%; 
+  background: #e8dfc0; 
+  animation: btwinkle ease-in-out infinite alternate; 
+}
+
+@keyframes btwinkle { 
+  from { opacity: var(--op); } 
+  to { opacity: calc(var(--op) * 0.15); } 
+}
+
+.backLink { 
+  position: relative; 
+  z-index: 10; 
+  display: inline-block; 
+  padding: 1.4rem 2rem 0; 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.68rem; 
+  letter-spacing: 0.2em; 
+  text-transform: uppercase; 
+  color: rgba(232,220,190,0.55); 
+  text-decoration: none; 
+  transition: color 0.2s; 
+}
+.backLink:hover { 
+  color: rgba(232,220,190,0.85); 
+}
+
+.bookHero { 
+  position: relative; 
+  z-index: 5; 
+  display: grid; 
+  grid-template-columns: auto 1fr; 
+  gap: 2.5rem; 
+  max-width: 900px; 
+  margin: 1.5rem auto 0; 
+  padding: 0 2rem; 
+  align-items: start; 
+}
+
+.bookCoverHero { 
+  width: 180px; 
+  aspect-ratio: 2/3; 
+  background: rgba(76,29,149,0.2); 
+  border: 1px solid rgba(232,220,190,0.1); 
+  border-radius: 4px; 
+  overflow: hidden; 
+  position: relative; 
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6); 
+}
+.bookCoverHero img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+}
+
+.coverPlaceholderHero { 
+  width: 100%; 
+  height: 100%; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 14px; 
+  padding: 20px; 
+  background: linear-gradient(160deg, rgba(76,29,149,0.3), rgba(6,4,12,0.8)); 
+}
+.pSigil { 
+  font-size: 3rem; 
+  opacity: 0.75; 
+}
+.pTitle { 
+  font-family: 'IM Fell English', serif; 
+  font-size: 0.72rem; 
+  font-style: italic; 
+  color: rgba(232,220,190,0.75); 
+  text-align: center; 
+  line-height: 1.5; 
+}
+
+.infoCol { 
+  padding-top: 0.5rem; 
+}
+
+.bookCategoryBadge { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.62rem; 
+  letter-spacing: 0.3em; 
+  text-transform: uppercase; 
+  color: rgba(217,119,6,0.8); 
+  margin-bottom: 0.75rem; 
+}
+
+.bookTitleRow { 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+  flex-wrap: wrap; 
+  margin-bottom: 0.4rem; 
+}
+
+.bookHeroTitle { 
+  font-family: 'Cinzel', serif; 
+  font-size: clamp(1.4rem, 4vw, 2.4rem); 
+  font-weight: 600; 
+  color: #E8DCBE; 
+  line-height: 1.2; 
+  letter-spacing: 0.04em; 
+  margin: 0; 
+}
+
+.editBookBtn { 
+  background: transparent; 
+  border: 1px solid rgba(232,220,190,0.2); 
+  color: rgba(232,220,190,0.6); 
+  padding: 4px 8px; 
+  cursor: pointer; 
+  font-size: 0.7rem; 
+  border-radius: 2px; 
+  transition: all 0.2s; 
+  white-space: nowrap; 
+}
+.editBookBtn:hover { 
+  border-color: rgba(217,119,6,0.4); 
+  color: rgba(217,119,6,0.8); 
+}
+
+.bookHeroAuthor { 
+  font-size: 1.1rem; 
+  font-style: italic; 
+  color: rgba(232,220,190,0.75); 
+  margin: 0 0 1.2rem; 
+}
+
+/* Currently reading toggle */
+.readingToggle {
+  display: inline-flex; 
+  align-items: center; 
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(109,40,217,0.35);
+  background: rgba(109,40,217,0.07);
+  color: rgba(109,40,217,0.8);
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.68rem; 
+  letter-spacing: 0.1em; 
+  text-transform: uppercase;
+  cursor: pointer; 
+  transition: all 0.25s; 
+  margin-bottom: 1rem;
+}
+.readingToggle:hover { 
+  background: rgba(109,40,217,0.15); 
+  border-color: rgba(109,40,217,0.5); 
+}
+.readingToggle.active { 
+  background: rgba(109,40,217,0.2); 
+  border-color: rgba(109,40,217,0.7); 
+  color: rgba(180,140,255,0.9); 
+}
+
+.heroAvg { 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+  margin-bottom: 1.2rem; 
+}
+.heroAvgNum { 
+  font-family: 'Cinzel', serif; 
+  font-size: 1.4rem; 
+  color: #D97706; 
+}
+
+.heroReaders { 
+  display: flex; 
+  gap: 6px; 
+  align-items: center; 
+  flex-wrap: wrap; 
+  margin-bottom: 1.2rem; 
+}
+.heroReaderLabel { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.65rem; 
+  letter-spacing: 0.15em; 
+  text-transform: uppercase; 
+  color: rgba(232,220,190,0.6); 
+  margin-right: 4px; 
+}
+.readerBubbleLg { 
+  width: 28px; 
+  height: 28px; 
+  border-radius: 50%; 
+  background: rgba(109,40,217,0.25); 
+  border: 1px solid rgba(109,40,217,0.45); 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.65rem; 
+  color: rgba(232,220,190,0.8); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  text-decoration: none; 
+  transition: all 0.2s; 
+}
+.readerBubbleLg:hover { 
+  border-color: rgba(109,40,217,0.7); 
+  background: rgba(109,40,217,0.4); 
+}
+
+.heroAdded { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.65rem; 
+  color: rgba(232,220,190,0.5); 
+  letter-spacing: 0.1em; 
+}
+
+.sectionDivider { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  max-width: 900px; 
+  margin: 2.5rem auto 0; 
+  padding: 0 2rem; 
+  opacity: 0.6; 
+}
+.sectionDivider::before, .sectionDivider::after { 
+  content: ''; 
+  flex: 1; 
+  height: 1px; 
+  background: linear-gradient(90deg, transparent, #c8a840, transparent); 
+}
+.sectionDivider span { 
+  font-family: 'Cinzel', serif; 
+  font-size: 0.65rem; 
+  letter-spacing: 0.3em; 
+  color: #c8a840; 
+  text-transform: uppercase; 
+  white-space: nowrap; 
+}
+
+.reviewsSection { 
+  position: relative; 
+  z-index: 5; 
+  max-width: 900px; 
+  margin: 0 auto; 
+  padding: 1.5rem 2rem 0; 
+}
+
+/* Review card */
+.reviewCard { 
+  border: 1px solid rgba(232,220,190,0.1); 
+  padding: 1.4rem; 
+  margin-bottom: 1rem; 
+  background: rgba(255,255,255,0.02); 
+  border-radius: 4px; 
+  position: relative; 
+  transition: border-color 0.2s; 
+}
+.reviewCard:hover { 
+  border-color: rgba(232,220,190,0.14); 
+}
+
+.reviewHeader { 
+  display: flex; 
+  gap: 12px; 
+  align-items: flex-start; 
+  margin-bottom: 1rem; 
+}
+.reviewAvatarLink { 
+  text-decoration: none; 
+}
+.reviewAvatar { 
+  width: 34px; 
+  height: 34px; 
+  border-radius: 50%; 
+  background: rgba(109,40,217,0.3); 
+  border: 1px solid rgba(109,40,217,0.5); 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.7rem; 
+  color: rgba(232,220,190,0.8); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  flex-shrink: 0; 
+  transition: all 0.2s; 
+}
+.reviewAvatar:hover { 
+  background: rgba(109,40,217,0.5); 
+}
+
+.reviewMeta { 
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 3px; 
+}
+.reviewName { 
+  font-family: 'Cinzel', serif; 
+  font-size: 0.88rem; 
+  color: #E8DCBE; 
+  letter-spacing: 0.05em; 
+  text-decoration: none; 
+  transition: color 0.2s; 
+}
+.reviewName:hover { 
+  color: #F59E0B; 
+}
+.reviewDate { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.65rem; 
+  color: rgba(232,220,190,0.6); 
+  letter-spacing: 0.1em; 
+}
+.reviewLang { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.6rem; 
+  color: rgba(109,40,217,0.7); 
+  letter-spacing: 0.1em; 
+}
+.reviewRight { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: flex-end; 
+  gap: 4px; 
+}
+
+.reviewText { 
+  font-style: italic; 
+  font-size: 1rem; 
+  line-height: 1.7; 
+  color: rgba(232,220,190,0.75); 
+  margin: 0; 
+  padding: 0.6rem 0 0.6rem 1rem; 
+  border-left: 2px solid rgba(217,119,6,0.25); 
+}
+.reviewFooter { 
+  margin-top: 10px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 10px; 
+}
+.reviewInscribed { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.6rem; 
+  color: rgba(232,220,190,0.4); 
+  letter-spacing: 0.1em; 
+}
+
+.noReviews { 
+  font-style: italic; 
+  color: rgba(232,220,190,0.55); 
+  font-size: 0.92rem; 
+  padding: 1rem 0; 
+}
+
+.traceActionBtn { 
+  background: transparent; 
+  border: none; 
+  cursor: pointer; 
+  font-size: 0.7rem; 
+  padding: 2px 4px; 
+  transition: color 0.2s; 
+  color: rgba(217,119,6,0.6); 
+}
+.traceActionBtn:hover { 
+  color: rgba(217,119,6,1); 
+}
+.traceActionBtn.danger { 
+  color: rgba(239,68,68,0.6); 
+}
+.traceActionBtn.danger:hover { 
+  color: rgba(239,68,68,1); 
+}
+
+/* Reaction button */
+.reactionBtn { 
+  background: transparent; 
+  border: 1px solid rgba(232,220,190,0.1); 
+  border-radius: 12px; 
+  padding: 3px 10px; 
+  font-size: 0.75rem; 
+  color: rgba(232,220,190,0.5); 
+  cursor: pointer; 
+  transition: all 0.2s; 
+  display: flex; 
+  align-items: center; 
+  gap: 4px; 
+  font-family: 'Inconsolata', monospace; 
+}
+.reactionBtn:hover:not(:disabled) { 
+  border-color: rgba(232,220,190,0.25); 
+  color: rgba(232,220,190,0.8); 
+}
+.reactionBtn.reacted { 
+  border-color: rgba(217,119,6,0.4); 
+  color: rgba(217,119,6,0.8); 
+  background: rgba(217,119,6,0.08); 
+}
+.reactionBtn:disabled { 
+  cursor: default; 
+  opacity: 0.5; 
+}
+
+/* Dimensional ratings form */
+/* -- Interactive Dimension Input Slider -- */
+.dimRow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(18, 18, 18, 0.4);
+  border: 1px solid rgba(232, 220, 190, 0.08);
+  border-radius: 4px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(4px);
+}
+
+.dimTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(232, 220, 190, 0.6);
+}
+
+.dimCurrentValue {
+  color: #F59E0B;
+  font-weight: 600;
+  margin-left: auto; /* Pushes the numeric value indicator to the far right */
+}
+
+.dimHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dimLabel {
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(232, 220, 190, 0.25);
+  width: 75px;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+  user-select: none;
+}
+
+.dimLeftLabel { text-align: right; }
+.dimRightLabel { text-align: left; }
+
+/* Dynamic illumination when user selects a side */
+.dimLabel.active {
+  color: #F59E0B;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.45);
+  font-weight: 600;
+}
+
+.dimLabel.balanced {
+  color: rgba(232, 220, 190, 0.6);
+}
+
+/* -- Track & Center guide notch -- */
+.dimTrack {
+  position: relative;
+  flex: 1;
+  height: 2px;
+  background: rgba(232, 220, 190, 0.12);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dimCenterGuide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 6px;
+  background: rgba(232, 220, 190, 0.2);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+/* -- Interactive Pip Button Target -- */
+.dimPip {
+  background: transparent;
+  border: none;
+  padding: 10px; /* Generates a comfortable tap hit-box on mobile */
+  margin: -10px; /* Offsets padding to keep pips structurally aligned with the line */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  z-index: 5;
+}
+
+.dimPipVisual {
+  width: 6px;
+  height: 6px;
+  background: rgba(232, 220, 190, 0.3);
+  border-radius: 50%;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Tactile scale-up when hovering a notch */
+.dimPip:hover .dimPipVisual {
+  background: rgba(245, 158, 11, 0.6);
+  transform: scale(1.3);
+}
+
+/* Activated Pip (Turns into the glowing diamond) */
+.dimPip.active .dimPipVisual {
+  width: 7px;
+  height: 7px;
+  background: #F59E0B;
+  border: 1px solid #FFF5DF;
+  border-radius: 0%; /* Swaps circle back to square */
+  transform: rotate(45deg); /* Diamond shape */
+  box-shadow: 
+    0 0 6px #F59E0B, 
+    0 0 12px rgba(217, 119, 6, 0.6);
+}
+
+.dimPip.active:hover .dimPipVisual {
+  transform: rotate(45deg) scale(1.1);
+}
+
+/* -- Dimensional display -- */
+.dimDisplayGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 1rem 0;
+  padding: 14px 16px;
+  background: rgba(18, 18, 18, 0.4);
+  border-radius: 4px;
+  border: 1px solid rgba(232, 220, 190, 0.08);
+  backdrop-filter: blur(4px);
+}
+
+.dimDisplayItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dimDisplayIcon {
+  font-size: 0.85rem;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(232, 220, 190, 0.04);
+  border: 1px solid rgba(232, 220, 190, 0.1);
+  border-radius: 50%;
+  color: rgba(232, 220, 190, 0.8);
+}
+
+.dimDisplayBarWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+/* -- Labels & Active Leaning States -- */
+.dimDisplayLabel {
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(232, 220, 190, 0.25); /* Faded out by default */
+  width: 75px;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+  user-select: none;
+}
+
+.dimDisplayLabelLeft {
+  text-align: right;
+}
+
+.dimDisplayLabelRight {
+  text-align: left;
+}
+
+/* Lights up the dominant side of the spectrum */
+.dimDisplayLabel.active {
+  color: #F59E0B; /* Bright amber gold */
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.45);
+  font-weight: 600;
+}
+
+/* Subtly shines both sides if perfectly centered/balanced (rating = 3) */
+.dimDisplayLabel.balanced {
+  color: rgba(232, 220, 190, 0.6);
+}
+
+/* -- The Slide Track and Notch -- */
+.dimDisplayTrack {
+  position: relative;
+  flex: 1;
+  height: 2px;
+  background: rgba(232, 220, 190, 0.12); /* Subtle parchment baseline track */
+  border-radius: 2px;
+}
+
+.dimDisplayCenterNotch {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 6px;
+  background: rgba(232, 220, 190, 0.3); /* Midpoint marker */
+  border-radius: 1px;
+}
+
+/* -- Glowing Floating Diamond Pointer -- */
+.dimDisplayIndicator {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(45deg); /* Rotates square into diamond */
+  
+  width: 7px;
+  height: 7px;
+  background: #F59E0B;
+  border: 1px solid #FFF5DF;
+  box-shadow: 
+    0 0 6px #F59E0B, 
+    0 0 12px rgba(217, 119, 6, 0.6);
+    
+  transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
+  z-index: 2;
+}
+
+.dimDisplayIndicator:hover {
+  transform: translate(-50%, -50%) rotate(45deg) scale(1.2);
+  box-shadow: 
+    0 0 10px #F59E0B, 
+    0 0 20px rgba(217, 119, 6, 0.8);
+}
+
+.dimDisplayList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+/* -- Dimension Legend -- */
+.dimLegend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(232, 220, 190, 0.08);
+}
+
+.dimLegendSigil {
+  font-size: 8px;
+  color: #F59E0B;
+  opacity: 0.6;
+  user-select: none;
+}
+
+.dimLegendList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.dimLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dimLegendIcon {
+  font-size: 0.65rem;
+}
+
+.dimLegendText {
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(232, 220, 190, 0.4);
+}
+
+.dimLegendSeparator {
+  font-size: 8px;
+  color: rgba(232, 220, 190, 0.15);
+  margin-left: 6px;
+  user-select: none;
+}
+
+/* Reply thread */
+.replyThread { margin-top: 12px; border-top: 1px solid rgba(232,220,190,0.06); padding-top: 10px; }
+.replyList { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.replyItem { display: flex; gap: 8px; align-items: flex-start; }
+.replyAvatar { width: 24px; height: 24px; border-radius: 50%; background: rgba(76,29,149,0.3); border: 1px solid rgba(76,29,149,0.4); font-family: 'Inconsolata', monospace; font-size: 0.55rem; color: rgba(232,220,190,0.7); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.replyBody { flex: 1; }
+.replyMeta { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.replyAuthor { font-family: 'Cinzel', serif; font-size: 0.72rem; color: rgba(232,220,190,0.75); text-decoration: none; letter-spacing: 0.04em; transition: color 0.2s; }
+.replyAuthor:hover { color: #F59E0B; }
+.replyDate { font-family: 'Inconsolata', monospace; font-size: 0.58rem; color: rgba(232,220,190,0.35); }
+.replyDelete { background: transparent; border: none; color: rgba(239,68,68,0.4); cursor: pointer; font-size: 0.6rem; padding: 0; transition: color 0.2s; }
+.replyDelete:hover { color: rgba(239,68,68,0.8); }
+.replyContent { font-size: 0.88rem; color: rgba(232,220,190,0.7); line-height: 1.6; margin: 0; font-style: italic; }
+.replyOpenBtn { background: transparent; border: none; color: rgba(232,220,190,0.4); font-family: 'Inconsolata', monospace; font-size: 0.65rem; letter-spacing: 0.1em; cursor: pointer; padding: 4px 0; transition: color 0.2s; }
+.replyOpenBtn:hover { color: rgba(232,220,190,0.75); }
+.replyForm { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.replyInput { width: 100%; background: rgba(255,255,255,0.02); border: 1px solid rgba(232,220,190,0.12); color: #E8DCBE; font-family: 'IM Fell English', serif; font-size: 0.88rem; padding: 8px 11px; outline: none; border-radius: 2px; resize: vertical; transition: border-color 0.2s; }
+.replyInput:focus { border-color: rgba(217,119,6,0.4); }
+.replyInput::placeholder { color: rgba(232,220,190,0.35); font-style: italic; }
+.replyActions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Add review / edit form shared */
+.addReviewBtn { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.2em; color: #06040C; background: linear-gradient(135deg, #D97706, #92400E); border: none; padding: 11px 24px; cursor: pointer; transition: opacity 0.2s, transform 0.2s; text-transform: uppercase; border-radius: 2px; display: block; margin-bottom: 1.5rem; }
+.addReviewBtn:hover { opacity: 0.85; transform: translateY(-1px); }
+.reviewFormWrap { border: 1px solid rgba(217,119,6,0.18); padding: 1.8rem; background: rgba(217,119,6,0.03); margin-bottom: 2rem; border-radius: 4px; animation: slideDown 0.3s ease; display: flex; flex-direction: column; gap: 14px; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.reviewFormTitle { font-family: 'Cinzel', serif; font-size: 0.9rem; letter-spacing: 0.25em; color: rgba(232,220,190,0.88); text-align: center; margin: 0; text-transform: uppercase; }
+.reviewDone { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.25em; color: rgba(217,119,6,0.8); text-align: center; padding: 1rem; animation: fadeIn 0.4s ease; }
+.formGrid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fieldLabel { display: block; font-family: 'Inconsolata', monospace; font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(217,119,6,0.75); margin-bottom: 5px; }
+.fieldInput, .fieldSelect, .fieldTextarea { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(232,220,190,0.18); color: #E8DCBE; font-family: 'IM Fell English', serif; font-size: 0.9rem; padding: 8px 11px; outline: none; transition: border-color 0.2s; border-radius: 2px; box-sizing: border-box; }
+.fieldInput:focus, .fieldSelect:focus, .fieldTextarea:focus { border-color: rgba(217,119,6,0.45); }
+.fieldInput::placeholder { color: rgba(232,220,190,0.4); font-style: italic; }
+.fieldSelect option { background: #0D0914; }
+.fieldTextarea { resize: vertical; min-height: 90px; }
+.formError { font-family: 'Inconsolata', monospace; font-size: 0.7rem; color: rgba(220,80,80,0.9); margin: 0; padding: 7px 11px; border: 1px solid rgba(220,80,80,0.2); border-radius: 2px; }
+.formActions { display: flex; gap: 10px; justify-content: flex-end; }
+.modalCancel { font-family: 'Inconsolata', monospace; font-size: 0.68rem; letter-spacing: 0.15em; color: rgba(232,220,190,0.7); background: transparent; border: 1px solid rgba(232,220,190,0.1); padding: 8px 16px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; border-radius: 2px; }
+.modalCancel:hover { border-color: rgba(232,220,190,0.25); }
+.modalSubmit { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.1em; color: #06040C; background: linear-gradient(135deg, #D97706, #92400E); border: none; padding: 8px 20px; cursor: pointer; transition: opacity 0.2s; text-transform: uppercase; border-radius: 2px; }
+.modalSubmit:disabled { opacity: 0.5; cursor: not-allowed; }
+.modalSubmit:not(:disabled):hover { opacity: 0.85; }
+.enrichBtn { padding: 4px 12px; font-size: 0.72rem; background: rgba(217,119,6,0.55); border: 1px solid rgba(217,119,6,0.5); color: #E8DCBE; cursor: pointer; border-radius: 2px; transition: all 0.2s; font-family: 'Inconsolata', monospace; }
+.enrichBtn:hover:not(:disabled) { background: rgba(217,119,6,0.8); }
+.enrichBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Category group grid (edit book) */
+.catGroupGrid { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.catGroupLabel { font-family: 'Inconsolata', monospace; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(109,40,217,0.7); margin-bottom: 5px; }
+.catCheckboxGrid { display: flex; flex-wrap: wrap; gap: 5px; }
+.catCheckbox { font-family: 'Inconsolata', monospace; font-size: 0.66rem; letter-spacing: 0.08em; padding: 3px 9px; border: 1px solid rgba(232,220,190,0.15); border-radius: 3px; cursor: pointer; color: rgba(232,220,190,0.6); background: rgba(255,255,255,0.02); transition: all 0.15s; user-select: none; }
+.catCheckbox:hover { border-color: rgba(217,119,6,0.35); color: #F5F5F0; }
+.catCheckbox.checked { border-color: rgba(217,119,6,0.65); color: #F59E0B; background: rgba(217,119,6,0.1); }
+
+.loadingState { text-align: center; padding: 5rem; font-style: italic; color: rgba(232,220,190,0.6); font-size: 0.85rem; font-family: 'Inconsolata', monospace; letter-spacing: 0.15em; position: relative; z-index: 5; }
+
+@media (max-width: 600px) {
+  .bookHero { grid-template-columns: 1fr; gap: 1.5rem; }
+  .bookCoverHero { width: 140px; }
+  .formGrid2 { grid-template-columns: 1fr; }
+  .bookHero, .reviewsSection { padding: 0 1.2rem; }
+  .dimLeftLabel, .dimRightLabel { min-width: 50px; font-size: 0.52rem; }
+}
+
+/* Datepicker overrides */
+:global(.react-datepicker-wrapper) { width: 100% !important; }
+:global(.react-datepicker) { background-color: #0D0914 !important; border: 1px solid rgba(232,220,190,0.18) !important; font-family: 'IM Fell English', serif !important; color: #E8DCBE !important; box-shadow: 0 10px 25px rgba(0,0,0,0.8) !important; }
+:global(.react-datepicker__header) { background-color: #0D0914 !important; border-bottom: 1px solid rgba(232,220,190,0.15) !important; }
+:global(.react-datepicker__current-month), :global(.react-datepicker-year-header) { color: #F59E0B !important; font-family: 'Cinzel', serif !important; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem !important; }
+:global(.react-datepicker__month-container) { background-color: #0D0914 !important; }
+:global(.react-datepicker__month-text) { color: #E8DCBE !important; font-family: 'Inconsolata', monospace !important; font-size: 0.75rem !important; text-transform: uppercase; }
+:global(.react-datepicker__month-text:hover) { background-color: rgba(217,119,6,0.2) !important; color: #F59E0B !important; border-radius: 2px !important; }
+:global(.react-datepicker__month--selected), :global(.react-datepicker__month-text--keyboard-selected) { background-color: #D97706 !important; color: #06040C !important; border-radius: 2px !important; }
+:global(.react-datepicker__navigation-icon::before) { border-color: #F59E0B !important; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

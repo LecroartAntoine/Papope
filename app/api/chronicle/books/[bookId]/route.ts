@@ -16,29 +16,74 @@ export async function GET(
    const bookId = parseInt(bookIdStr)
   if (isNaN(bookId)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
 
-  try {
-    // Fetch book
-    const { rows: bookRows } = await sql`
-      SELECT id, title, author, image_url, COALESCE(categories, ARRAY[category]) AS categories, added_by, added_at
-      FROM chronicle_books
-      WHERE id = ${bookId}
-    `
-    if (bookRows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+   try {
+     // Fetch book
+     const { rows: bookRows } = await sql`
+       SELECT id, title, author, image_url, COALESCE(categories, ARRAY[category]) AS categories, added_by, added_at
+       FROM chronicle_books
+       WHERE id = ${bookId}
+     `
+     if (bookRows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    // Fetch reviews
-    const { rows: reviewRows } = await sql`
-      SELECT id, reviewer_name, date_read, pages, rating, recommendation, created_at
-      FROM chronicle_reviews
-      WHERE book_id = ${bookId}
-      ORDER BY created_at DESC
-    `
+     // Fetch reviews
+     const { rows: reviewRows } = await sql`
+       SELECT id, reviewer_name, date_read, pages, rating, recommendation, created_at, language_read, dimensions
+       FROM chronicle_reviews
+       WHERE book_id = ${bookId}
+       ORDER BY created_at DESC
+     `
 
-    return NextResponse.json({
-      book: {
-        ...bookRows[0],
-        reviews: reviewRows,
-      }
-    })
+     // Fetch reactions for all reviews in this book
+     const reviewIds = reviewRows.map((r: any) => r.id)
+     let reactionsMap: Record<number, any[]> = {}
+     if (reviewIds.length > 0) {
+       const { rows: reactionRows } = await sql`
+         SELECT trace_id, user_name
+         FROM chronicle_reactions
+         WHERE trace_id = ANY(${reviewIds as any}::int[])
+       `
+       reactionsMap = reactionRows.reduce((acc: Record<number, any[]>, r: any) => {
+         if (!acc[r.trace_id]) acc[r.trace_id] = []
+         acc[r.trace_id].push(r)
+         return acc
+       }, {})
+     }
+
+     // Fetch replies for all reviews in this book
+     let repliesMap: Record<number, any[]> = {}
+     if (reviewIds.length > 0) {
+       const { rows: replyRows } = await sql`
+         SELECT id, trace_id, author_name, content, created_at
+         FROM chronicle_replies
+         WHERE trace_id = ANY(${reviewIds as any}::int[])
+         ORDER BY created_at ASC
+       `
+       repliesMap = replyRows.reduce((acc: Record<number, any[]>, r: any) => {
+         if (!acc[r.trace_id]) acc[r.trace_id] = []
+         acc[r.trace_id].push({
+           id: r.id,
+           trace_id: r.trace_id,
+           author_name: r.author_name,
+           content: r.content,
+           created_at: r.created_at,
+         })
+         return acc
+       }, {})
+     }
+
+     // Attach reactions and replies to each review
+     const enrichedReviews = reviewRows.map((r: any) => ({
+       ...r,
+       reactions: reactionsMap[r.id] || [],
+       replies: repliesMap[r.id] || [],
+     }))
+
+     return NextResponse.json({
+       book: {
+         ...bookRows[0],
+         reviews: enrichedReviews,
+       }
+     })
   } catch (err) {
     console.error('[chronicle/books/[bookId] GET]', err)
     return NextResponse.json({ error: 'Database error' }, { status: 500 })

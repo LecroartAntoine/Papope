@@ -1,0 +1,547 @@
+/* profile.module.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Inconsolata:wght@400;500&display=swap');
+
+:global(*) { 
+  box-sizing: border-box; 
+}
+
+.profileRoot { 
+  min-height: 100vh; 
+  background: #06040C; 
+  color: #E8DCBE; 
+  font-family: 'IM Fell English', serif; 
+  padding-bottom: 6rem; 
+  position: relative; 
+  overflow-x: hidden; 
+}
+
+.profileMist { 
+  position: fixed; 
+  inset: 0; 
+  pointer-events: none; 
+  background: radial-gradient(ellipse 50% 40% at 50% 0%, rgba(76,29,149,0.15) 0%, transparent 60%), radial-gradient(ellipse 35% 25% at 85% 70%, rgba(217,119,6,0.07) 0%, transparent 55%); 
+}
+
+.profileStars { 
+  position: fixed; 
+  inset: 0; 
+  pointer-events: none; 
+  overflow: hidden; 
+}
+
+.pstar { 
+  position: absolute; 
+  border-radius: 50%; 
+  background: #e8dfc0; 
+  animation: ptwinkle ease-in-out infinite alternate; 
+}
+
+@keyframes ptwinkle { 
+  from { opacity: var(--op); } 
+  to { opacity: calc(var(--op) * 0.2); } 
+}
+
+.backLink { 
+  position: relative; 
+  z-index: 10; 
+  display: inline-block; 
+  padding: 1.4rem 2rem 0; 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.68rem; 
+  letter-spacing: 0.2em; 
+  text-transform: uppercase; 
+  color: rgba(232,220,190,0.5); 
+  text-decoration: none; 
+  transition: color 0.2s; 
+}
+
+.backLink:hover { 
+  color: rgba(232,220,190,0.85); 
+}
+
+/* Profile header */
+.profileHeader { 
+  position: relative; 
+  z-index: 5; 
+  max-width: 800px; 
+  margin: 2rem auto 0; 
+  padding: 0 2rem; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  text-align: center; 
+}
+
+/* Avatar */
+.avatarSection { margin-bottom: 1.2rem; }
+
+.avatarRing { 
+  position: relative; 
+  display: inline-block; 
+}
+
+.avatarImg { 
+  width: 80px; 
+  height: 80px; 
+  border-radius: 50%; 
+  object-fit: cover; 
+  border: 2px solid rgba(217,119,6,0.5); 
+  box-shadow: 0 0 20px rgba(217,119,6,0.2), 0 0 40px rgba(109,40,217,0.15); 
+}
+
+.avatarPlaceholder { 
+  width: 80px; 
+  height: 80px; 
+  border-radius: 50%; 
+  background: rgba(109,40,217,0.3); 
+  border: 2px solid rgba(109,40,217,0.5); 
+  font-family: 'Cinzel', serif; 
+  font-size: 1.3rem; 
+  color: rgba(232,220,190,0.85); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  box-shadow: 0 0 20px rgba(109,40,217,0.2); 
+}
+
+.avatarEditBtn { 
+  position: absolute; 
+  bottom: 0; 
+  right: 0; 
+  width: 22px; 
+  height: 22px; 
+  border-radius: 50%; 
+  background: rgba(217,119,6,0.85); 
+  border: 1px solid rgba(217,119,6,1); 
+  color: #06040C; 
+  font-size: 0.65rem; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  cursor: pointer; 
+  transition: all 0.2s; 
+}
+
+.avatarEditBtn:hover { 
+  background: #D97706; 
+}
+
+/* Name */
+.profileName { 
+  font-family: 'Cinzel', serif; 
+  font-size: clamp(1.3rem, 4vw, 1.9rem); 
+  font-weight: 600; 
+  color: #E8DCBE; 
+  letter-spacing: 0.1em; 
+  margin: 0 0 0.3rem; 
+}
+
+.profileOwnerBadge { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.6rem; 
+  letter-spacing: 0.25em; 
+  text-transform: uppercase; 
+  color: rgba(217,119,6,0.6); 
+  margin-bottom: 0.8rem; 
+}
+
+/* Bio */
+.bioDisplay { 
+  position: relative; 
+  max-width: 480px; 
+}
+
+.bioText { 
+  font-style: italic; 
+  font-size: 0.95rem; 
+  color: rgba(232,220,190,0.65); 
+  line-height: 1.65; 
+  margin: 0; 
+}
+
+.bioEmpty { 
+  font-style: italic; 
+  font-size: 0.88rem; 
+  color: rgba(232,220,190,0.3); 
+  cursor: pointer; 
+  transition: color 0.2s; 
+  margin: 0; 
+}
+
+.bioEmpty:hover { 
+  color: rgba(232,220,190,0.6); 
+}
+
+.bioEditBtn { 
+  background: transparent; 
+  border: none; 
+  color: rgba(217,119,6,0.5); 
+  font-size: 0.75rem; 
+  cursor: pointer; 
+  margin-top: 6px; 
+  transition: color 0.2s; 
+}
+
+.bioEditBtn:hover { 
+  color: rgba(217,119,6,0.9); 
+}
+
+.bioEdit { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+  width: 100%; 
+  max-width: 480px; 
+}
+
+.bioTextarea { 
+  width: 100%; 
+  background: rgba(255,255,255,0.03); 
+  border: 1px solid rgba(232,220,190,0.18); 
+  color: #E8DCBE; 
+  font-family: 'IM Fell English', serif; 
+  font-size: 0.9rem; 
+  padding: 8px 11px; 
+  outline: none; 
+  border-radius: 2px; 
+  resize: vertical; 
+  transition: border-color 0.2s; 
+}
+
+.bioTextarea:focus { 
+  border-color: rgba(217,119,6,0.45); 
+}
+
+.bioTextarea::placeholder { 
+  color: rgba(232,220,190,0.35); 
+  font-style: italic; 
+}
+
+.bioActions { 
+  display: flex; 
+  gap: 8px; 
+  justify-content: flex-end; 
+}
+
+.bioCancel { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.65rem; 
+  letter-spacing: 0.1em; 
+  text-transform: uppercase; 
+  color: rgba(232,220,190,0.55); 
+  background: transparent; 
+  border: 1px solid rgba(232,220,190,0.12); 
+  padding: 5px 12px; 
+  cursor: pointer; 
+  border-radius: 2px; 
+  transition: all 0.2s; 
+}
+
+.bioCancel:hover { 
+  border-color: rgba(232,220,190,0.25); 
+}
+
+.bioSave { 
+  font-family: 'Cinzel', serif; 
+  font-size: 0.65rem; 
+  letter-spacing: 0.08em; 
+  text-transform: uppercase; 
+  color: #06040C; 
+  background: linear-gradient(135deg, #D97706, #92400E); 
+  border: none; 
+  padding: 5px 14px; 
+  cursor: pointer; 
+  border-radius: 2px; 
+}
+
+.bioSave:disabled { 
+  opacity: 0.5; 
+}
+
+/* Divider */
+.profileDivider { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  max-width: 800px; 
+  margin: 1.8rem auto 0; 
+  padding: 0 2rem; 
+  opacity: 0.5; 
+}
+
+.profileDivider::before, .profileDivider::after { 
+  content: ''; 
+  flex: 1; 
+  height: 1px; 
+  background: linear-gradient(90deg, transparent, #c8a840, transparent); 
+}
+
+.profileDivider span { 
+  font-family: 'Cinzel', serif; 
+  font-size: 0.58rem; 
+  letter-spacing: 0.3em; 
+  color: #c8a840; 
+  text-transform: uppercase; 
+  white-space: nowrap; 
+}
+
+/* Stats */
+.profileStats { 
+  position: relative; 
+  z-index: 5; 
+  display: flex; 
+  justify-content: center; 
+  gap: 2.5rem; 
+  max-width: 800px; 
+  margin: 1.5rem auto 0; 
+  padding: 0 2rem; 
+}
+
+.statItem { 
+  text-align: center; 
+}
+
+.statNum { 
+  font-family: 'Cinzel', serif; 
+  font-size: 1.6rem; 
+  color: #D97706; 
+  line-height: 1; 
+}
+
+.statLabel { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.58rem; 
+  letter-spacing: 0.2em; 
+  text-transform: uppercase; 
+  color: rgba(232,220,190,0.5); 
+  margin-top: 4px; 
+}
+
+/* Tabs */
+.profileTabs { 
+  position: relative; 
+  z-index: 5; 
+  display: flex; 
+  gap: 0; 
+  max-width: 800px; 
+  margin: 2rem auto 0; 
+  padding: 0 2rem; 
+  border-bottom: 1px solid rgba(232,220,190,0.1); 
+}
+
+.profileTab { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.72rem; 
+  letter-spacing: 0.2em; 
+  text-transform: uppercase; 
+  color: rgba(232,220,190,0.5); 
+  background: transparent; 
+  border: none; 
+  border-bottom: 2px solid transparent; 
+  padding: 10px 20px; 
+  cursor: pointer; 
+  transition: all 0.2s; 
+  margin-bottom: -1px; 
+}
+
+.profileTab:hover { 
+  color: rgba(232,220,190,0.8); 
+}
+
+.profileTab.active { 
+  color: #F59E0B; 
+  border-bottom-color: rgba(217,119,6,0.7); 
+}
+
+/* Content */
+.profileContent { 
+  position: relative; 
+  z-index: 5; 
+  max-width: 800px; 
+  margin: 0 auto; 
+  padding: 1.5rem 2rem 0; 
+}
+
+/* Trace rows */
+.traceRow { 
+  display: flex; 
+  gap: 14px; 
+  align-items: flex-start; 
+  padding: 1.2rem 0; 
+  border-bottom: 1px solid rgba(232,220,190,0.07); 
+  text-decoration: none; 
+  color: inherit; 
+  transition: background 0.2s; 
+}
+
+.traceRow:hover { 
+  background: rgba(255,255,255,0.01); 
+}
+
+.traceRowCover { 
+  width: 50px; 
+  height: 75px; 
+  border-radius: 2px; 
+  overflow: hidden; 
+  flex-shrink: 0; 
+  background: rgba(76,29,149,0.2); 
+  border: 1px solid rgba(232,220,190,0.1); 
+}
+
+.traceRowCover img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+}
+
+.traceRowCoverPlaceholder { 
+  width: 100%; 
+  height: 100%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 1.2rem; 
+  opacity: 0.5; 
+}
+
+.traceRowBody { 
+  flex: 1; 
+  padding-top: 3px; 
+}
+
+.traceRowBook { 
+  font-family: 'Cinzel', serif; 
+  font-size: 0.9rem; 
+  color: #E8DCBE; 
+  letter-spacing: 0.04em; 
+  margin-bottom: 2px; 
+}
+
+.traceRowAuthor { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.7rem; 
+  color: rgba(232,220,190,0.55); 
+  margin-bottom: 6px; 
+}
+
+.traceRowMeta { 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+  margin-bottom: 6px; 
+  flex-wrap: wrap; 
+}
+
+.traceRowLang { 
+  font-size: 0.85rem; 
+}
+
+.traceRowDate { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.6rem; 
+  color: rgba(232,220,190,0.4); 
+  letter-spacing: 0.08em; 
+}
+
+.traceRowText { 
+  font-style: italic; 
+  font-size: 0.88rem; 
+  color: rgba(232,220,190,0.6); 
+  line-height: 1.6; 
+  margin: 0; 
+}
+
+/* Favorites grid */
+.favGrid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
+  gap: 16px 14px; 
+}
+
+.bookMini { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 7px; 
+  text-decoration: none; 
+  color: inherit; 
+  transition: transform 0.2s; 
+}
+
+.bookMini:hover { 
+  transform: translateY(-4px); 
+}
+
+.bookMiniCover { 
+  width: 100%; 
+  aspect-ratio: 2/3; 
+  border-radius: 2px; 
+  overflow: hidden; 
+  background: rgba(76,29,149,0.15); 
+  border: 1px solid rgba(232,220,190,0.12); 
+}
+
+.bookMiniCover img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+}
+
+.bookMiniPlaceholder { 
+  width: 100%; 
+  height: 100%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 1.5rem; 
+  background: linear-gradient(160deg, rgba(76,29,149,0.25), rgba(6,4,12,0.8)); 
+  opacity: 0.6; 
+}
+
+.bookMiniInfo { 
+  padding: 0 2px; 
+}
+
+.bookMiniTitle { 
+  font-family: 'IM Fell English', serif; 
+  font-size: 0.78rem; 
+  color: #F5F5F0; 
+  line-height: 1.3; 
+  display: -webkit-box; 
+  -webkit-line-clamp: 2; 
+  -webkit-box-orient: vertical; 
+  overflow: hidden; 
+}
+
+.bookMiniAuthor { 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.62rem; 
+  color: rgba(232,220,190,0.55); 
+}
+
+.profileEmpty { 
+  font-style: italic; 
+  color: rgba(232,220,190,0.4); 
+  font-size: 0.92rem; 
+  padding: 2rem 0; 
+  text-align: center; 
+}
+
+.loadingState { 
+  text-align: center; 
+  padding: 5rem; 
+  font-style: italic; 
+  color: rgba(232,220,190,0.55); 
+  font-family: 'Inconsolata', monospace; 
+  font-size: 0.85rem; 
+  letter-spacing: 0.15em; 
+  position: relative; 
+  z-index: 5; 
+}
+
+@media (max-width: 600px) {
+  .profileStats { gap: 1.5rem; }
+  .profileTabs { padding: 0 1rem; }
+  .profileContent { padding: 1.2rem 1.2rem 0; }
+  .profileHeader { padding: 0 1.2rem; }
+}

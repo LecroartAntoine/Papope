@@ -1,14 +1,15 @@
 'use client'
 
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState, useMemo } from 'react'
 import { useI18n } from '@/lib/i18n/context'
-import { BookOpen } from 'lucide-react'
 import styles from './chronicle.module.css'
+import Link from 'next/link'
+import { BookOpen } from 'lucide-react'
+import Stars from '@/components/Chronicle/Stars'
 
-// --- Types ----------------------------------------------------------------
+// ─── Types ──────────────────────────────────────────────────────────────────
 
 type Book = {
   id: number
@@ -19,422 +20,675 @@ type Book = {
   added_by: string
   added_at: string
   review_count: number
-  avg_rating: number | null
+  avg_rating: string | null
   readers: string[]
+  last_traced_at: string | null
+  currently_reading: string[] // usernames currently reading
+  favorite_count: number
+  is_favorited_by_me: boolean
 }
 
-type SortBy = 'title' | 'author' | 'date_added' | 'rating' | 'readers'
+// ─── Global Avatar Cache & Hook ─────────────────────────────────────────────
 
-const ALL_CATEGORIES = [
-  'Novel', 'Essay', 'Sci-Fi', 'Fantasy', 'Thriller', 'Poetry', 'Manga', 'Comics', 
-  'Young Adult', 'Mystery', 'Romance', 'Historical', 'Horror', 'Graphic Novel', 'Other'
-]
+const avatarCache: Record<string, string | null> = {}
+const avatarPending: Record<string, Promise<string | null>> = {}
 
-const CATEGORY_SIGILS: Record<string, string> = {
-  'Novel':         '📖',
-  'Essay':         '🧠',
-  'Sci-Fi':        '🚀',
-  'Fantasy':       '🔮',
-  'Thriller':      '🕵️',
-  'Poetry':        '✍️',
-  'Manga':         '🎨',
-  'Comics':        '💭',
-  'Young Adult':   '⚡',
-  'Mystery':       '🔍',
-  'Romance':       '💕',
-  'Historical':    '📜',
-  'Horror':        '👻',
-  'Graphic Novel': '🎭',
-  'Other':         '📑',
+export function useUserAvatar(username: string | null | undefined) {
+  const { data: session } = useSession()
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!username) return
+
+    // Immediately resolve current user if available in local session
+    if (username === session?.user?.name && session?.user?.image) {
+      setAvatarUrl(session.user.image)
+      return
+    }
+    
+    if (username in avatarCache) {
+      setAvatarUrl(avatarCache[username])
+      return
+    }
+
+    if (username in avatarPending) {
+      avatarPending[username].then(url => setAvatarUrl(url))
+      return
+    }
+
+    // Create a new promise since one doesn't exist
+    const promise = (async () => {
+      try {
+        const resUser = await fetch(`/api/chronicle/user/${encodeURIComponent(username)}`)
+        if (resUser.ok) {
+          const data = await resUser.json()
+          const url = data.profile?.avatar_url || data.avatar_url || data.user?.avatar_url || null
+          avatarCache[username] = url
+          return url
+        }
+      } catch (err) {
+        // Fallback silently on error
+      }
+      avatarCache[username] = null
+      return null
+    })()
+
+    avatarPending[username] = promise
+    promise.then(url => {
+      setAvatarUrl(url)
+      delete avatarPending[username]
+    })
+  }, [username, session])
+
+  return avatarUrl
 }
 
-// --- Stars ----------------------------------------------------------------
+// ─── Categories ──────────────────────────────────────────────────────────────
 
-function Stars({ rating, size = 11 }: { rating: number | null; size?: number }) {
-  if (!rating) return <span style={{ color: 'rgba(232,220,190,0.2)', fontSize: size }}>★ ★ ★ ★ ★</span>
-  const full = Math.round(rating)
+export const CATEGORY_GROUPS: Record<string, string[]> = {
+  'chronicle.catGroup.form': ['Novel', 'Short Story', 'Novella', 'Essay', 'Poetry', 'Play', 'Graphic Novel', 'Manga', 'Comics', 'Illustrated'],
+  'chronicle.catGroup.genre': ['Fantasy', 'Sci-Fi', 'Horror', 'Thriller', 'Mystery', 'Romance', 'Historical Fiction', 'Literary Fiction', 'Dystopia', 'Mythology'],
+  'chronicle.catGroup.knowledge': ['Philosophy', 'History', 'Science', 'Politics', 'Biography', 'Memoir', 'Psychology', 'Sociology', 'Economics', 'Self-Help'],
+  'chronicle.catGroup.audience': ['Young Adult', 'Middle Grade', 'Children'],
+  'chronicle.catGroup.other': ['Anthology', 'Travel', 'Cooking', 'Art & Design', 'Other'],
+}
+
+export const ALL_CATEGORIES = Object.values(CATEGORY_GROUPS).flat()
+
+
+// ─── User Badges Component ──────────────────────────────────────────────────
+
+function UserBadgeItem({ name, titlePrefix }: { name: string; titlePrefix: string }) {
+  const avatarUrl = useUserAvatar(name)
   return (
-    <span style={{ fontSize: size, letterSpacing: 2 }}>
-      {Array.from({ length: 5 }, (_, i) => (
-        <span key={i} style={{ color: i < full ? '#D97706' : 'rgba(232,220,190,0.18)' }}>
-          ★
-        </span>
-      ))}
-    </span>
+    <Link
+      href={`/chronicle/user/${encodeURIComponent(name)}`}
+      className={styles.readerBubble}
+      title={`${titlePrefix} ${name}`}
+      onClick={e => e.stopPropagation()}
+      style={{ overflow: 'hidden', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+    >
+      {avatarUrl ? (
+        <img src={avatarUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      ) : (
+        name.slice(0, 2).toUpperCase()
+      )}
+    </Link>
   )
 }
 
-// --- BookCard -------------------------------------------------------------
+function UserBadges({ users, titlePrefix }: { users: string[]; titlePrefix: string }) {
+  if (!users || users.length === 0) return null
+  return (
+    <div className={styles.bookReaders} style={{ display: 'inline-flex', flexWrap: 'wrap', gap: '4px', verticalAlign: 'middle' }}>
+      {users.slice(0, 4).map((name, i) => (
+        <UserBadgeItem key={i} name={name} titlePrefix={titlePrefix} />
+      ))}
+      {users.length > 4 && (
+        <div className={`${styles.readerBubble} ${styles.readerMore}`}>
+          +{users.length - 4}
+        </div>
+      )}
+    </div>
+  )
+}
 
-function BookCard({ book, onClick }: { book: Book; onClick: () => void }) {
-  const [imgErr, setImgErr] = useState(false)
-  const primaryCat = book.categories[0] || 'Other'
-  const catSigil = CATEGORY_SIGILS[primaryCat] ?? '📑'
+// ─── AddBookPanel ─────────────────────────────────────────────────────────────
+
+function AddBookPanel({ onAdded, t, username }: { onAdded: () => void; t: (k: string) => string; username: string }) {
+   const [open, setOpen] = useState(false)
+   const [form, setForm] = useState({ title: '', author: '', image_url: '', categories: [] as string[] })
+   const [loading, setLoading] = useState(false)
+   const [uploading, setUploading] = useState(false)
+   const [error, setError] = useState('')
+   const [coverPreview, setCoverPreview] = useState<string | null>(null)
+
+   const toggleCat = (c: string) =>
+     setForm(f => ({ ...f, categories: f.categories.includes(c) ? f.categories.filter(x => x !== c) : [...f.categories, c] }))
+
+   const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+     const file = e.target.files?.[0]
+     if (!file) return
+     setUploading(true)
+     try {
+       const formData = new FormData()
+       formData.append('cover', file)
+       const res = await fetch('/api/chronicle/books/cover', { method: 'POST', body: formData })
+       if (!res.ok) throw new Error()
+       const data = await res.json()
+       setForm(f => ({ ...f, image_url: data.url }))
+       setCoverPreview(data.url)
+     } catch { setError(t('chronicle.spellFailed')) }
+     finally { setUploading(false) }
+   }
+
+   const submit = async () => {
+     if (!form.title.trim() || !form.author.trim()) { setError(t('chronicle.titleAuthorRequired')); return }
+     if (form.categories.length === 0) { setError(t('chronicle.categoryRequired')); return }
+     setLoading(true); setError('')
+     try {
+       const res = await fetch('/api/chronicle/books', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ ...form, added_by: username }),
+       })
+       if (!res.ok) throw new Error()
+       setOpen(false)
+       setForm({ title: '', author: '', image_url: '', categories: [] })
+       setCoverPreview(null)
+       onAdded()
+     } catch { setError(t('chronicle.spellFailed')) }
+     finally { setLoading(false) }
+   }
+
+  if (!open) return (
+    <button className={styles.addBtn} onClick={() => setOpen(true)}>{t('chronicle.inscribeVolume')}</button>
+  )
 
   return (
-    <button className={styles['book-card']} onClick={onClick}>
-      <div className={styles['book-cover']}>
+    <div className={styles.inlinePanel}>
+      <div className={styles.inlinePanelHeader}>
+        <span className={styles.inlinePanelRune}>✦</span>
+        <h3 className={styles.inlinePanelTitle}>{t('chronicle.bindNewTome')}</h3>
+        <button className={styles.inlinePanelClose} onClick={() => setOpen(false)}>✕</button>
+      </div>
+
+       <div className={styles.inlinePanelBody}>
+         <div className={styles.fieldRow2}>
+           <div>
+             <label className={styles.fieldLabel}>{t('chronicle.bookTitle')}</label>
+             <input className={styles.fieldInput} value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t('chronicle.bookTitlePlaceholder')} />
+           </div>
+           <div>
+             <label className={styles.fieldLabel}>{t('chronicle.author')}</label>
+             <input className={styles.fieldInput} value={form.author} onChange={e => setForm(f => ({ ...f, author: e.target.value }))} placeholder={t('chronicle.authorPlaceholder')} />
+           </div>
+         </div>
+         <div>
+           <label className={styles.fieldLabel}>{t('chronicle.coverUrl')}</label>
+           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+             <label className={styles.fieldInput} style={{ cursor: uploading ? 'not-allowed' : 'pointer', opacity: uploading ? 0.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(232,220,190,0.05)', padding: '8px 12px', minHeight: '40px' }}>
+               {uploading ? '⏳ Uploading...' : coverPreview ? '✓ Cover selected' : '📁 Choose cover image'}
+               <input type="file" accept="image/*" onChange={handleCoverChange} disabled={uploading} style={{ display: 'none' }} />
+             </label>
+             {coverPreview && (
+               <img src={coverPreview} alt="Cover preview" style={{ width: 40, height: 60, objectFit: 'cover', borderRadius: '4px' }} />
+             )}
+           </div>
+         </div>
+
+        <div>
+          <label className={styles.fieldLabel}>{t('chronicle.categories')}</label>
+          <div className={styles.catGroupGrid}>
+            {Object.entries(CATEGORY_GROUPS).map(([groupKey, cats]) => (
+              <div key={groupKey} className={styles.catGroup}>
+                <div className={styles.catGroupLabel}>{t(groupKey)}</div>
+                <div className={styles.catCheckboxGrid}>
+                  {cats.map(cat => (
+                    <label key={cat} className={`${styles.catCheckbox} ${form.categories.includes(cat) ? styles.checked : ''}`}>
+                      <input type="checkbox" checked={form.categories.includes(cat)} onChange={() => toggleCat(cat)} style={{ display: 'none' }} />
+                      {cat}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {error && <p className={styles.formError}>{error}</p>}
+        <div className={styles.formActions}>
+          <button className={styles.modalCancel} onClick={() => setOpen(false)}>{t('chronicle.cancel')}</button>
+          <button className={styles.modalSubmit} onClick={submit} disabled={loading}>
+            {loading ? t('chronicle.submitting') : t('chronicle.sealTheTome')}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ReadingChipAvatar({ username }: { username: string }) {
+  const avatarUrl = useUserAvatar(username)
+  
+  if (avatarUrl) {
+    return (
+      <img 
+        src={avatarUrl} 
+        alt={username} 
+        title={username}
+        style={{ 
+          width: 16, 
+          height: 16, 
+          borderRadius: '50%', 
+          objectFit: 'cover', 
+          display: 'inline-block' 
+        }} 
+      />
+    )
+  }
+  
+  return <span title={username}>{username.slice(0, 2).toUpperCase()}</span>
+}
+
+// ─── BookCard ─────────────────────────────────────────────────────────────────
+
+function BookCard({ book, currentUser, onFavoriteToggle, onClick }: {
+  book: Book
+  currentUser: string | null | undefined
+  onFavoriteToggle: (bookId: number) => void
+  onClick: () => void
+}) {
+  const [imgErr, setImgErr] = useState(false)
+
+  return (
+    <div className={styles.bookCard} onClick={onClick} style={{ position: 'relative' }}>
+      {/* Currently reading ribbon */}
+      {book.currently_reading?.length > 0 && (
+        <div className={styles.readingRibbon} title={book.currently_reading.join(', ')}>
+          <span className={styles.readingEye}>◎</span>
+        </div>
+      )}
+
+      {/* Favorite toggle button */}
+      <button
+        className={`${styles.favBtn} ${book.is_favorited_by_me ? styles.faved : ''}`}
+        onClick={e => { e.stopPropagation(); onFavoriteToggle(book.id) }}
+        title={book.is_favorited_by_me ? 'Remove from reliquary' : 'Add to reliquary'}
+      >
+        {book.is_favorited_by_me ? '♥' : '♡'}
+        {book.favorite_count > 0 && <span className={styles.favCount}>{book.favorite_count}</span>}
+      </button>
+
+      <div className={styles.bookCover}>
         {book.image_url && !imgErr
           ? <img src={book.image_url} alt={book.title} onError={() => setImgErr(true)} />
           : (
-            <div className={styles['book-cover-placeholder']}>
-              <span className={styles['placeholder-sigil']}>{catSigil}</span>
-              <span className={styles['placeholder-title']}>{book.title}</span>
+            <div className={styles.bookCoverPlaceholder}>
+              <span className={styles.placeholderSigil}>༒︎</span>
+              <span className={styles.placeholderTitle}>{book.title}</span>
             </div>
           )
         }
-        <div className={styles['book-cover-shine']} />
-        <div className={styles['book-overlay']}>
-          <span className={styles['book-category']}>{book.categories.join(', ')}</span>
+        <div className={styles.bookOverlay}>
+          <span className={styles.bookCategory}>{book.categories[0]}</span>
         </div>
+        <div className={styles.bookCoverShine} />
       </div>
 
-      <div className={styles['book-info']}>
-        <Stars rating={book.avg_rating} size={10} />
-        <div className={styles['book-title']}>{book.title}</div>
-        <div className={styles['book-author']}>{book.author}</div>
+      <div className={styles.bookInfo}>
+        <div className={styles.bookTitle}>{book.title}</div>
+        <div className={styles.bookAuthor}>{book.author}</div>
+        
+        {book.review_count > 0 && (
+          <div style={{ marginTop: 4 }}>
+            <Stars rating={book.avg_rating ? parseFloat(book.avg_rating) : null} quantity={book.review_count} />
+          </div>
+        )}
 
-        {book.readers.length > 0 && (
-          <div className={styles['book-readers']}>
-            {book.readers.slice(0, 4).map((r, i) => (
-              <div key={i} className={styles['reader-bubble']} title={r}>
-                {r.slice(0, 2).toUpperCase()}
-              </div>
-            ))}
-            {book.readers.length > 4 && (
-              <div className={styles['reader-more']}>+{book.readers.length - 4}</div>
-            )}
+        {/* --- Favorites Indicator with Count --- */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', marginTop: '6px', color: 'rgba(232, 220, 190, 0.7)' }}>
+          <span style={{ color: book.is_favorited_by_me ? '#ef4444' : 'rgba(232, 220, 190, 0.4)' }}>♥</span>
+          <span>{book.favorite_count} {book.favorite_count === 1 ? 'favorite' : 'favorites'}</span>
+        </div>
+
+        {/* --- Traces Indicator with User Badges --- */}
+        {book.readers?.length > 0 && (
+          <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'rgba(232, 220, 190, 0.5)' }}>
+              ✍︎ Traces:
+            </span>
+            <UserBadges users={book.readers} titlePrefix="Traced by" />
+          </div>
+        )}
+
+        {/* --- Currently Reading Indicator with User Badges --- */}
+        {book.currently_reading?.length > 0 && (
+          <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'rgba(232, 220, 190, 0.5)' }}>
+              ◎ Reading:
+            </span>
+            <UserBadges users={book.currently_reading} titlePrefix="Currently reading:" />
           </div>
         )}
       </div>
-    </button>
+    </div>
   )
 }
 
-// --- AddBookModal ---------------------------------------------------------
+// ─── CategoryFilter ──────────────────────────────────────────────────────────
 
-function AddBookModal({ onClose, onAdded, t, username }: { onClose: () => void; onAdded: () => void; t: (key: string, vars?: Record<string, string | number>) => string; username?: string }) {
-   const [form, setForm] = useState({
-     title: '', author: '', image_url: '', categories: ['Novel']
-   })
-   const [loading, setLoading] = useState(false)
-   const [error, setError] = useState('')
-
-   const handleSubmit = async () => {
-     if (!form.title || !form.author || form.categories.length === 0) {
-       setError(t('chronicle.titleAuthorNameRequired'))
-       return
-     }
-    setLoading(true)
-    setError('')
-    try {
-      const res = await fetch('/api/chronicle/books', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          added_by: username || 'Unknown',
-        }),
-      })
-      if (!res.ok) throw new Error()
-      onAdded()
-      onClose()
-     } catch {
-       setError(t('chronicle.errorInscribingGrimoire'))
-     } finally {
-      setLoading(false)
-    }
-  }
-
-  const toggleCategory = (cat: string) => {
-    setForm(f => ({
-      ...f,
-      categories: f.categories.includes(cat)
-        ? f.categories.filter(c => c !== cat)
-        : [...f.categories, cat]
-    }))
-  }
-
-   return (
-      <div className={styles['modal-backdrop']}>
-        <div className={styles['modal-box']} onClick={e => e.stopPropagation()}>
-          <div className={styles['modal-rune']}>✨</div>
-          <h2 className={styles['modal-title']}>{t('chronicle.inscribeGrimoire')}</h2>
-          <p className={styles['modal-sub']}>{t('chronicle.eachBookIsSpell')}</p>
-
-          <div className={styles['modal-fields']}>
-            <label className={styles['field-label']}>{t('chronicle.bookTitle')}</label>
-            <input 
-              className={styles['field-input']} 
-              placeholder={t('chronicle.tomeNamePlaceholder')}
-              value={form.title} 
-              onChange={e => setForm({ ...form, title: e.target.value })} 
-            />
-
-            <label className={styles['field-label']}>{t('chronicle.author')}</label>
-            <input 
-              className={styles['field-input']} 
-              placeholder={t('chronicle.authorPlaceholder')}
-              value={form.author} 
-              onChange={e => setForm({ ...form, author: e.target.value })} 
-            />
-
-            <label className={styles['field-label']}>{t('chronicle.categories')}</label>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(2, 1fr)', 
-              gap: '8px',
-              marginBottom: '12px'
-            }}>
-              {ALL_CATEGORIES.map(cat => (
-                <label key={cat} style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '6px',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem'
-                }}>
-                  <input 
-                    type="checkbox" 
-                    checked={form.categories.includes(cat)}
-                    onChange={() => toggleCategory(cat)}
-                    style={{ cursor: 'pointer' }}
-                  />
-                  {cat}
-                </label>
-              ))}
-            </div>
-
-            <label className={styles['field-label']}>{t('chronicle.coverUrl')} <span style={{ opacity: 0.5 }}>({t('chronicle.coverUrlOptional')})</span></label>
-            <input 
-              className={styles['field-input']} 
-              placeholder={t('chronicle.coverUrlPlaceholder')}
-              value={form.image_url} 
-              onChange={e => setForm({ ...form, image_url: e.target.value })} 
-            />
-          </div>
-
-          {error && <p className={styles['modal-error']}>{error}</p>}
-
-          <div className={styles['modal-actions']}>
-            <button className={styles['modal-cancel']} onClick={onClose}>{t('chronicle.cancel')}</button>
-            <button className={styles['modal-submit']} onClick={handleSubmit} disabled={loading}>
-              {loading ? t('chronicle.inscribingInProgress') : t('chronicle.carveInTome')}
-            </button>
-          </div>
-
-         <button className={styles['modal-close']} onClick={onClose}>×</button>
-       </div>
-     </div>
-   )
-}
-
-// --- Main -----------------------------------------------------------------
-
-export default function ChroniclePage() {
-   const { t } = useI18n()
-   const router = useRouter()
-   const { data: session } = useSession()
-   const [books, setBooks] = useState<Book[]>([])
-   const [loading, setLoading] = useState(true)
-   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-   const [showAdd, setShowAdd] = useState(false)
-   const [search, setSearch] = useState('')
-   const [sortBy, setSortBy] = useState<SortBy>('date_added')
-
-  const fetchBooks = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/chronicle/books')
-      const data = await res.json()
-      setBooks(data.books ?? [])
-    } catch {
-      // Log or handle empty state fallback
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchBooks()
-  }, [])
-
-  const filtered = books.filter(b => {
-    const matchCat = selectedCategory === null || b.categories.includes(selectedCategory)
-    const matchSearch = !search ||
-      b.title.toLowerCase().includes(search.toLowerCase()) ||
-      b.author.toLowerCase().includes(search.toLowerCase())
-    return matchCat && matchSearch
-  }).sort((a, b) => {
-    switch(sortBy) {
-      case 'title':
-        return a.title.localeCompare(b.title)
-      case 'author':
-        return a.author.localeCompare(b.author)
-      case 'date_added':
-        return new Date(b.added_at).getTime() - new Date(a.added_at).getTime()
-      case 'rating':
-        return (b.avg_rating ?? 0) - (a.avg_rating ?? 0)
-      case 'readers':
-        return b.readers.length - a.readers.length
-      default:
-        return 0
-    }
-  })
+function CategoryFilter({ active, onToggle, t }: { active: string; onToggle: (c: string) => void; t: (k: string) => string }) {
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null)
 
   return (
-    <>
-      <div className={styles['chronicle-root']}>
-        {/* Moon background */}
-        <div 
+    <div className={styles.catFilter}>
+      <button className={`${styles.catPill} ${active === 'All' ? styles.active : ''}`} onClick={() => onToggle('All')}>{t('chronicle.allTomes')}</button>
+      {Object.entries(CATEGORY_GROUPS).map(([groupKey, cats]) => {
+        const groupLabel = t(groupKey)
+        const isGroupActive = cats.includes(active)
+        const isExpanded = expandedGroup === groupKey
+        return (
+          <div key={groupKey} style={{ position: 'relative', display: 'inline-block' }}>
+            <button
+              className={`${styles.catPill} ${isGroupActive ? styles.active : ''}`}
+              onClick={() => setExpandedGroup(isExpanded ? null : groupKey)}
+            >
+              {groupLabel} <span style={{ opacity: 0.6, fontSize: '0.6em' }}>{isExpanded ? '▲' : '▼'}</span>
+            </button>
+            {isExpanded && (
+              <div className={styles.catSubmenu}>
+                {cats.map(cat => (
+                  <button
+                    key={cat}
+                    className={`${styles.catSubmenuItem} ${active === cat ? styles.active : ''}`}
+                    onClick={() => { onToggle(cat); setExpandedGroup(null) }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ─── SortBy ──────────────────────────────────────────────────────────
+
+const SORT_OPTIONS = [
+  { value: 'lastTraced', labelKey: 'chronicle.sortLastTraced' },
+  { value: 'added', labelKey: 'chronicle.sortAdded' },
+  { value: 'rating', labelKey: 'chronicle.sortRating' },
+  { value: 'title', labelKey: 'chronicle.sortTitle' },
+] as const
+
+function SortBy({ value, onChange, t }: {
+  value: typeof SORT_OPTIONS[number]['value']
+    onChange: (value: typeof SORT_OPTIONS[number]['value']) => void
+    t: (k: string) => string
+  }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  // Find the label for the currently selected value
+  const activeOption = SORT_OPTIONS.find((opt) => opt.value === value)
+  const activeLabel = activeOption ? t(activeOption.labelKey) : ''
+
+  return (
+    <div className={styles.sortWrap}>
+      <button
+        className={`${styles.sortTrigger} ${isExpanded ? styles.active : ''}`}
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <span className={styles.sortLabel}>{t('chronicle.sortBy')}:</span>
+        <span className={styles.sortValue}>{activeLabel}</span>
+        <span style={{ opacity: 0.5, fontSize: '0.65em', marginLeft: '2px' }}>
+          {isExpanded ? '▲' : '▼'}
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div className={styles.sortSubmenu}>
+          {SORT_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              className={`${styles.sortSubmenuItem} ${value === opt.value ? styles.active : ''}`}
+              onClick={() => {
+                onChange(opt.value)
+                setIsExpanded(false)
+              }}
+            >
+              {t(opt.labelKey)}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+export default function ChroniclePage() {
+  const { t } = useI18n()
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  const [books, setBooks] = useState<Book[]>([])
+  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set())
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [activeCategory, setActiveCategory] = useState('All')
+  const [sort, setSort] = useState<'lastTraced' | 'added' | 'rating' | 'title'>('lastTraced')
+
+  useEffect(() => { if (status === 'unauthenticated') router.push('/login') }, [status, router])
+
+  const fetchBooks = async () => {
+    try {
+      const res = await fetch('/api/chronicle/books')
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      setBooks(data.books)
+    } catch {} finally { setLoading(false) }
+  }
+
+  const fetchFavorites = async () => {
+    try {
+      const res = await fetch('/api/chronicle/favorites')
+      if (res.ok) {
+        const data = await res.json()
+        const raw = Array.isArray(data) ? data : (data.favorites || data.bookIds || [])
+        const ids = raw.map((item: any) => typeof item === 'number' ? item : (item.book_id || item.id))
+        setFavoriteIds(new Set(ids))
+      }
+    } catch {}
+  }
+
+  useEffect(() => { 
+    if (status === 'authenticated') {
+      fetchBooks()
+      fetchFavorites()
+    } 
+  }, [status])
+
+  const handleFavoriteToggle = async (bookId: number) => {
+    const isFav = favoriteIds.has(bookId)
+    const method = isFav ? 'DELETE' : 'POST'
+
+    // Optimistically update favorite selection states locally
+    setFavoriteIds(prev => {
+      const next = new Set(prev)
+      if (isFav) next.delete(bookId)
+      else next.add(bookId)
+      return next
+    })
+
+    setBooks(prev => prev.map(b => b.id === bookId ? {
+      ...b,
+      favorite_count: b.favorite_count + (isFav ? -1 : 1)
+    } : b))
+
+    try {
+      await fetch(`/api/chronicle/favorites?bookId=${bookId}`, { method })
+    } catch {
+      // Revert states locally in case the network fails
+      setFavoriteIds(prev => {
+        const next = new Set(prev)
+        if (isFav) next.add(bookId)
+        else next.delete(bookId)
+        return next
+      })
+      setBooks(prev => prev.map(b => b.id === bookId ? {
+        ...b,
+        favorite_count: b.favorite_count + (isFav ? 1 : -1)
+      } : b))
+    }
+  }
+
+  const displayed = useMemo(() => {
+    // Inject client-side verified favorite boolean state to display accurate selections
+    let list = books.map(b => ({
+      ...b,
+      is_favorited_by_me: favoriteIds.has(b.id)
+    }))
+
+    if (activeCategory !== 'All') list = list.filter(b => b.categories.includes(activeCategory))
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      list = list.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q))
+    }
+    list.sort((a, b) => {
+      if (sort === 'lastTraced') {
+        const aT = (typeof a.last_traced_at === 'string' && a.last_traced_at.trim() !== '') ? a.last_traced_at : a.added_at
+        const bT = (typeof b.last_traced_at === 'string' && b.last_traced_at.trim() !== '') ? b.last_traced_at : b.added_at
+        
+        const aTime = aT ? new Date(aT).getTime() : 0
+        const bTime = bT ? new Date(bT).getTime() : 0
+        
+        const validA = isNaN(aTime) ? 0 : aTime
+        const validB = isNaN(bTime) ? 0 : bTime
+        
+        return validB - validA
+      }
+      if (sort === 'added') return new Date(b.added_at).getTime() - new Date(a.added_at).getTime()
+      if (sort === 'rating') return parseFloat(b.avg_rating ?? '0') - parseFloat(a.avg_rating ?? '0')
+      if (sort === 'title') return a.title.localeCompare(b.title)
+      return 0
+    })
+    return list
+  }, [books, favoriteIds, activeCategory, search, sort])
+
+  const currentUserAvatar = useUserAvatar(session?.user?.name)
+
+  if (status === 'loading' || status === 'unauthenticated') return null
+
+  const currentlyReading = books.filter(b => b.currently_reading?.length > 0)
+  
+  return (
+    <div className={styles.chronicleRoot}>
+      <div 
           className={styles.moon}
           style={{
             backgroundImage: 'url(/images/moon.png)',
           }}
         />
-
-        {/* Stars background */}
-        <div className={styles['chronicle-stars']}>
-          {Array.from({ length: 120 }, (_, i) => {
-            // Better random distribution using seeded pseudo-random
-            const seed = i * 73856093 ^ 19349663;
-            const x = ((seed ^ (seed >> 16)) % 10000) / 100;
-            const y = (((seed * 73) ^ (seed >> 24)) % 10000) / 100;
-            const size = (seed % 7 < 2) ? 1.8 : (seed % 7 < 5) ? 1.2 : 0.8;
-            const op = 0.1 + ((seed % 13) / 20);
-            const dur = 2 + ((seed % 6) / 2);
-            
-            return (
-              <div 
-                key={i} 
-                className={styles.cstar} 
-                style={{
-                  left: `${x}%`, 
-                  top: `${y}%`,
-                  width: size, 
-                  height: size,
-                  ['--op' as string]: op,
-                  animationDuration: `${dur}s`,
-                  animationDelay: `${(seed % 50) / 10}s`,
-                }} 
-              />
-            );
-          })}
-        </div>
-
-        <div className={styles.mist} />
-
-        {/* Back link */}
-        <Link href="/" className={styles['back-nav']}>
+      <div className={styles.mist} />
+      <div className={styles.chronicleStars}>
+        {Array.from({ length: 80 }, (_, i) => ({
+          x: (i * 137.5 + 23) % 100, y: (i * 97.3 + 11) % 100,
+          size: i % 5 === 0 ? 2 : 1, op: 0.1 + (i % 7) * 0.06, dur: 2 + (i % 5),
+        })).map((s, i) => (
+          <div key={i} className={styles.cstar} style={{
+            left: `${s.x}%`, top: `${s.y}%`,
+            width: s.size, height: s.size,
+            ['--op' as string]: s.op,
+            animationDuration: `${s.dur}s`,
+            animationDelay: `${(i * 0.4) % 5}s`,
+          }} />
+        ))}
+      </div>
+      
+      {/* Top Navigation Wrapper for Back Nav & Self Profile Nav */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <Link href="/" className={styles.backNav}>
           {t('chronicle.backToHome')}
         </Link>
+        {session?.user?.name && (
+          <Link 
+            href={`/chronicle/user/${session.user.name}`} 
+            className={styles.userProfileNav}
+          >
+            {currentUserAvatar ? (
+              <img src={currentUserAvatar} alt={session.user.name} className={styles.userProfileAvatar} />
+            ) : (
+              <div className={styles.userProfilePlaceholder}>
+                {session.user.name.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <span>{session.user.name}</span>
+          </Link>
+        )}
+      </div>
 
-        {/* Header */}
-        <header className={styles['chronicle-header']}>
-          <h1 className={styles['chronicle-wordmark']}>{t('chronicle.theChronicle')}</h1>
-          <div className={styles['chronicle-divider']}>
-            <span>{t('chronicle.collectiveGrimoire')}</span>
-          </div>
-        </header>
+      {/* Header */}
+      <div className={styles.chronicleHeader}>
+        <h1 className={styles.chronicleWordmark}>{t('chronicle.title')}</h1>
+        <div className={styles.chronicleDivider}><span>✦ {t('chronicle.divider')} ✦</span></div>
+        <p className={styles.headerSub}>{t('chronicle.subtitle')}</p>
+      </div>
 
-        {/* Toolbar */}
-        <div className={styles.toolbar}>
-          <div className={styles['search-wrap']}>
-            <span className={styles['search-icon']}>🔍</span>
-            <input
-              className={styles['search-input']}
-              placeholder={t('chronicle.searchTome')}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+      {/* Currently Reading Banner */}
+      {currentlyReading.length > 0 && (
+        <div className={styles.readingNowBanner}>
+          <div className={styles.readingNowLabel}>◎ {t('chronicle.currentlyReading')}</div>
+          <div className={styles.readingNowBooks}>
+            {currentlyReading.map(book => (
+              <div key={book.id} className={styles.readingChip} onClick={() => router.push(`/chronicle/book/${book.id}`)}>
+                <span className={styles.readingChipEye}>◎</span>
+                <span>{book.title}</span>
+                <span className={styles.readingChipReaders} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  {book.currently_reading.map((u, index) => (
+                    <span key={u} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      {index > 0 && <span style={{ opacity: 0.5 }}>·</span>}
+                      <ReadingChipAvatar username={u} />
+                    </span>
+                  ))}
+                </span>
+              </div>
+            ))}
           </div>
-          <div className={styles['sort-wrap']}>
-            <label className={styles['sort-label']}>{t('chronicle.sortBy') || 'Sort'}</label>
-            <select 
-              className={styles['sort-select']}
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value as SortBy)}
-            >
-              <option value="date_added">📅 {t('chronicle.dateAdded') || 'Date Added'}</option>
-              <option value="title">📖 {t('chronicle.bookTitle') || 'Title'}</option>
-              <option value="author">✍️ {t('chronicle.author') || 'Author'}</option>
-              <option value="rating">⭐ {t('chronicle.rating') || 'Rating'}</option>
-              <option value="readers">👥 {t('chronicle.readers') || 'Most Read'}</option>
-            </select>
-          </div>
-          <button className={styles['add-btn']} onClick={() => setShowAdd(true)}>
-            {t('chronicle.registerBook')}
-          </button>
+        </div>
+      )}
+
+      {/* Toolbar */}
+      <div className={styles.toolbar}>
+        <SortBy value={sort} onChange={setSort} t={t} />
+        <div className={styles.searchWrap}>
+          <span className={styles.searchIcon}>⌕</span>
+          <input
+            className={styles.searchInput}
+            placeholder={t('chronicle.searchPlaceholder')}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
         </div>
 
-        {/* Category filter */}
-        <div className={styles['cat-filter']}>
-          <button
-            className={[
-              styles['cat-pill'],
-              selectedCategory === null ? styles.active : null
-            ].filter(Boolean).join(' ')}
-            onClick={() => setSelectedCategory(null)}
-          >
-            ⭐ All
-          </button>
-          {ALL_CATEGORIES.map(c => (
-            <button
-              key={c}
-              className={[
-                styles['cat-pill'],
-                selectedCategory === c ? styles.active : null
-              ].filter(Boolean).join(' ')}
-              onClick={() => setSelectedCategory(c)}
-            >
-              {CATEGORY_SIGILS[c] ? `${CATEGORY_SIGILS[c]} ` : ''}{c}
-            </button>
+        <AddBookPanel onAdded={fetchBooks} t={t} username={session?.user?.name ?? ''} />
+      </div>
+
+      {/* Category filter */}
+      <div className={styles.catFilterWrapper}>
+        <CategoryFilter active={activeCategory} onToggle={setActiveCategory} t={t} />
+      </div>
+      {/* Book grid */}
+      {loading ? (
+        <p className={styles.loadingText}>{t('chronicle.openingTome')}</p>
+      ) : displayed.length === 0 ? (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyGlyph}>☽</div>
+          <p className={styles.emptyText}>{t('chronicle.noTomes')}</p>
+        </div>
+      ) : (
+        <div className={styles.booksGrid}>
+          {displayed.map(book => (
+            <BookCard
+              key={book.id}
+              book={book}
+              currentUser={session?.user?.name}
+              onFavoriteToggle={handleFavoriteToggle}
+              onClick={() => router.push(`/chronicle/book/${book.id}`)}
+            />
           ))}
         </div>
-
-        {/* Books grid */}
-        {loading
-          ? <div className={styles['loading-text']}>{t('chronicle.grimoireOpens')}</div>
-          : filtered.length === 0
-            ? (
-              <div className={styles['empty-state']}>
-                <div className={styles['empty-glyph']}>📖</div>
-                <p className={styles['empty-text']}>
-                  {books.length === 0
-                    ? t('chronicle.emptyGrimoire')
-                    : t('chronicle.noResults')}
-                </p>
-              </div>
-            )
-          : (
-            <div className={styles['books-grid']}>
-              {filtered.map(book => (
-                <BookCard
-                  key={book.id}
-                  book={book}
-                  onClick={() => router.push(`/chronicle/${book.id}`)}
-                />
-              ))}
-            </div>
-          )
-      }
-
-          {/* Add book modal */}
-          {showAdd && (
-            <AddBookModal
-              onClose={() => setShowAdd(false)}
-              onAdded={fetchBooks}
-              t={t}
-              username={session?.user?.name || undefined}
-            />
-          )}
-
-          {/* Floating Librarian Button */}
-          <Link href="/chronicle/librarian" className={styles['librarian-fab']}>
-            <BookOpen size={20} />
-            <span className={styles['fab-label']}>{t('librarian.title')}</span>
-          </Link>
-      </div>
-    </>
+      )}
+      {/* Floating Librarian Button */}
+      <Link href="/chronicle/librarian" className={styles.librarianFab}>
+        <BookOpen size={20} />
+        <span className={styles.fabLabel}>{t('librarian.title')}</span>
+      </Link>
+    </div>
   )
 }
