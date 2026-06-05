@@ -1,128 +1,158 @@
 import { db } from '@/lib/ionickel/db'
-import { serviceLog } from '@/lib/ionickel/schema'
+import { serviceLog, tripLog, odometerLog } from '@/lib/ionickel/schema'
 import { desc } from 'drizzle-orm'
-import { SCHEDULE, getNextDueKm, getStatus } from '@/lib/ionickel/schedule'
+import { SCHEDULE, getNextDueKm, getStatus, getProgress } from '@/lib/ionickel/schedule'
 import Link from 'next/link'
+import { LogActionButton } from '@/components/Ionickel/LogActionButton'
 
-const CURRENT_KM = 72000
+export const dynamic = 'force-dynamic'
 
-const STATUS_LABELS = {
-  due: { label: 'Overdue', className: 'badge-due' },
-  soon: { label: 'Due soon', className: 'badge-soon' },
-  ok: { label: 'OK', className: 'badge-ok' },
-  fixed: { label: 'Fixed interval', className: 'badge-fixed' },
-}
+export default async function DashboardPage() {
+  // ── Fetch data ──────────────────────────────────────────────────────────────
+  const [logs, trips, odoRows] = await Promise.all([
+    db.select().from(serviceLog).orderBy(desc(serviceLog.km)),
+    db.select().from(tripLog).orderBy(desc(tripLog.date)).limit(6),
+    db.select().from(odometerLog).orderBy(desc(odometerLog.km)).limit(1),
+  ])
 
-export default async function MaintenancePage() {
-  const logs = await db.select().from(serviceLog).orderBy(desc(serviceLog.km))
+  const currentKm = odoRows[0]?.km ?? 72000
 
-  // Build a map: itemName → last km it was done
+  // Build lastDoneMap: item name → km it was last serviced
   const lastDoneMap: Record<string, number> = {}
   for (const log of logs) {
-    for (const item of log.items as { name: string }[]) {
-      if (!lastDoneMap[item.name]) {
-        lastDoneMap[item.name] = log.km
-      }
+    for (const item of (log.items as { name: string }[])) {
+      if (!lastDoneMap[item.name]) lastDoneMap[item.name] = log.km
     }
   }
 
-  const rows = SCHEDULE.map((item) => {
+  // ── Schedule rows ───────────────────────────────────────────────────────────
+  const rows = SCHEDULE.map(item => {
     const lastKm = lastDoneMap[item.name] ?? 0
     const nextKm = getNextDueKm(item, lastKm)
-    const status = getStatus(nextKm, CURRENT_KM)
-    const pct = nextKm
-      ? Math.min(100, Math.max(0, Math.round(((CURRENT_KM - lastKm) / (nextKm - lastKm)) * 100)))
-      : 0
+    const status = getStatus(nextKm, currentKm)
+    const pct    = getProgress(item, lastKm, currentKm)
     return { item, lastKm, nextKm, status, pct }
   }).sort((a, b) => {
-    const order = { due: 0, soon: 1, ok: 2, fixed: 3 }
+    const order = { overdue: 0, soon: 1, ok: 2, fixed: 3 } as Record<string, number>
     return order[a.status] - order[b.status]
   })
 
-  const dueCount = rows.filter((r) => r.status === 'due').length
-  const soonCount = rows.filter((r) => r.status === 'soon').length
+  const overdueCount = rows.filter(r => r.status === 'overdue').length
+  const soonCount    = rows.filter(r => r.status === 'soon').length
+  const upcoming     = rows.filter(r => r.status !== 'ok' && r.status !== 'fixed').slice(0, 5)
+
+  // ── Trip stats ──────────────────────────────────────────────────────────────
+  const totalKm   = trips.reduce((s, t) => s + t.distanceKm, 0)
+  const evKm      = trips.filter(t => t.mode === 'ev').reduce((s, t) => s + t.distanceKm, 0)
+  const evPct     = totalKm > 0 ? Math.round(evKm / totalKm * 100) : 0
+  const recentTrips = trips.slice(0, 3)
+
+  // ── Oil change quick stat ───────────────────────────────────────────────────
+  const oilRow    = rows.find(r => r.item.id === 'oil')
+  const nextOilKm = oilRow?.nextKm ?? currentKm + 15000
 
   return (
-    <main className="container">
-      <header className="page-header">
+    <div className="page">
+      {/* Header */}
+      <div className="page-header">
         <div>
-          <h1>Hyundai Ioniq PHEV</h1>
-          <p className="subtitle">2021 · Maintenance tracker</p>
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-subtitle">Hyundai Ioniq PHEV · {new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</p>
         </div>
-        <nav className="top-nav">
-          <Link href="/ionickel" className="nav-link active">Dashboard</Link>
-          <Link href="/ionickel/log" className="nav-link">Service log</Link>
-          <Link href="/" className="nav-link">← Back</Link>
-        </nav>
-      </header>
+        <LogActionButton currentKm={currentKm} />
+      </div>
 
+      {/* Stat grid */}
       <div className="stat-grid">
-        <div className="stat">
-          <div className="stat-label">Current km</div>
-          <div className="stat-value">{CURRENT_KM.toLocaleString()}</div>
+        <div className="stat-card blue">
+          <div className="stat-label">Odometer</div>
+          <div className="stat-value blue">{currentKm.toLocaleString('fr-FR')}</div>
+          <div className="stat-sub">km</div>
         </div>
-        <div className="stat">
-          <div className="stat-label">Last oil change</div>
-          <div className="stat-value stat-ok">72 000 km</div>
-        </div>
-        <div className="stat">
-          <div className="stat-label">Next oil change</div>
-          <div className="stat-value stat-warn">87 000 km</div>
-        </div>
-        <div className="stat">
-          <div className="stat-label">Items overdue / soon</div>
-          <div className={`stat-value ${dueCount > 0 ? 'stat-due' : soonCount > 0 ? 'stat-warn' : 'stat-ok'}`}>
-            {dueCount} / {soonCount}
+        <div className={`stat-card ${overdueCount > 0 ? 'red' : soonCount > 0 ? 'amber' : 'green'}`}>
+          <div className="stat-label">Overdue / Soon</div>
+          <div className={`stat-value ${overdueCount > 0 ? 'red' : soonCount > 0 ? 'amber' : 'green'}`}>
+            {overdueCount} / {soonCount}
           </div>
+          <div className="stat-sub">maintenance items</div>
+        </div>
+        <div className="stat-card green">
+          <div className="stat-label">EV share</div>
+          <div className="stat-value green">{evPct}%</div>
+          <div className="stat-sub">of recorded trips</div>
+        </div>
+        <div className="stat-card amber">
+          <div className="stat-label">Next oil change</div>
+          <div className="stat-value amber">{nextOilKm.toLocaleString('fr-FR')}</div>
+          <div className="stat-sub">km</div>
         </div>
       </div>
 
-      <section>
-        <h2 className="section-title">All maintenance items</h2>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Last done</th>
-                <th>Next due</th>
-                <th>Progress</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(({ item, lastKm, nextKm, status, pct }) => (
-                <tr key={item.id}>
-                  <td>{item.name}</td>
-                  <td>{lastKm ? `${lastKm.toLocaleString()} km` : '—'}</td>
-                  <td>
-                    {item.type === 'special'
-                      ? <span className="muted">{item.specialNote}</span>
-                      : nextKm
-                        ? `${nextKm.toLocaleString()} km`
-                        : '—'}
-                  </td>
-                  <td>
-                    {status !== 'fixed' && nextKm ? (
-                      <div className="progress-bar">
-                        <div
-                          className={`progress-fill progress-${status}`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    ) : null}
-                  </td>
-                  <td>
-                    <span className={`badge ${STATUS_LABELS[status].className}`}>
-                      {STATUS_LABELS[status].label}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Upcoming maintenance */}
+      <section className="section">
+        <div className="section-header">
+          <div className="section-title">⚠ Upcoming maintenance</div>
+          <Link href="/ionickel/maintenance" className="btn btn-sm btn-ghost">View all →</Link>
         </div>
+
+        {upcoming.length === 0 ? (
+          <p style={{ color: 'var(--muted)', fontSize: 13 }}>All maintenance items are up to date. ✓</p>
+        ) : (
+          upcoming.map(({ item, lastKm, nextKm, status, pct }) => (
+            <div key={item.id} className={`maint-item ${status}`}>
+              <div>
+                <div className="maint-name">{item.name}</div>
+                <div className="maint-meta">
+                  Last: {lastKm ? `${lastKm.toLocaleString('fr-FR')} km` : '—'}
+                  {' · '}Every {item.interval.toLocaleString('fr-FR')} km
+                </div>
+              </div>
+              <div className="maint-bar-wrap">
+                <div className="maint-bar">
+                  <div className={`maint-fill ${status}`} style={{ width: `${pct}%` }} />
+                </div>
+                <span className="maint-km-next">{nextKm.toLocaleString('fr-FR')} km</span>
+              </div>
+              <span className={`badge badge-${status}`}>
+                {status === 'overdue' ? 'Overdue' : status === 'soon' ? 'Soon' : 'OK'}
+              </span>
+            </div>
+          ))
+        )}
       </section>
-    </main>
+
+      {/* Recent trips */}
+      <section className="section">
+        <div className="section-header">
+          <div className="section-title">🚗 Recent trips</div>
+          <Link href="/ionickel/trips" className="btn btn-sm btn-ghost">View all →</Link>
+        </div>
+
+        {recentTrips.length === 0 ? (
+          <p style={{ color: 'var(--muted)', fontSize: 13 }}>No trips logged yet.</p>
+        ) : (
+          <div className="trip-grid">
+            {recentTrips.map(t => (
+              <div key={t.id} className="trip-card">
+                <div className="trip-date">{new Date(t.date).toLocaleDateString('fr-FR')}</div>
+                <div className="trip-distance">
+                  {t.distanceKm}
+                  <span className="trip-km-unit"> km</span>
+                </div>
+                <div className="trip-cons">
+                  {t.mode === 'ev'
+                    ? `${t.energyKwh} kWh`
+                    : `${t.fuelLitres} L + ${t.energyKwh} kWh`}
+                </div>
+                <span className={`mode-pill mode-${t.mode}`}>
+                  {t.mode === 'ev' ? '⚡ EV' : t.mode === 'hybrid' ? '⚡⛽ Hybrid' : '⛽ Petrol'}
+                </span>
+                {t.destination && <div className="trip-dest">{t.destination}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
   )
 }
