@@ -19,9 +19,33 @@ export async function GET(
    try {
      // Fetch book
      const { rows: bookRows } = await sql`
-       SELECT id, title, author, image_url, COALESCE(categories, ARRAY[category]) AS categories, added_by, added_at
-       FROM chronicle_books
-       WHERE id = ${bookId}
+       SELECT
+         b.id,
+         b.title,
+         b.author,
+         b.image_url,
+         COALESCE(b.categories, ARRAY[b.category]) AS categories,
+         b.added_by,
+         b.added_at,
+         COUNT(DISTINCT r.id)::int AS review_count,
+         ROUND(AVG(r.rating)::numeric, 1) AS avg_rating,
+         COALESCE(
+           json_agg(DISTINCT r.reviewer_name) FILTER (WHERE r.reviewer_name IS NOT NULL),
+           '[]'
+         ) AS readers,
+         COUNT(DISTINCT f.id)::int AS favorite_count,
+         BOOL_OR(f.user_name = ${session.user?.name}) AS is_favorited_by_me,
+         MAX(r.created_at) AS last_traced_at,
+         COALESCE(
+           json_agg(DISTINCT ccr.user_name) FILTER (WHERE ccr.user_name IS NOT NULL),
+           '[]'
+         ) AS currently_reading
+       FROM chronicle_books b
+       LEFT JOIN chronicle_reviews r ON r.book_id = b.id
+       LEFT JOIN chronicle_favorites f ON f.book_id = b.id
+       LEFT JOIN chronicle_currently_reading ccr ON ccr.book_id = b.id
+       WHERE b.id = ${bookId}
+       GROUP BY b.id
      `
      if (bookRows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 

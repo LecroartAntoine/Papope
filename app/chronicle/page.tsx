@@ -120,11 +120,11 @@ function UserBadgeItem({ name, titlePrefix }: { name: string; titlePrefix: strin
 function UserBadges({ users, titlePrefix }: { users: string[]; titlePrefix: string }) {
   if (!users || users.length === 0) return null
   return (
-    <div className={styles.bookReaders} style={{ display: 'inline-flex', flexWrap: 'wrap', gap: '4px', verticalAlign: 'middle' }}>
-      {users.slice(0, 4).map((name, i) => (
+    <div className={styles.bookReaders}>
+      {users.slice(0, 3).map((name, i) => (
         <UserBadgeItem key={i} name={name} titlePrefix={titlePrefix} />
       ))}
-      {users.length > 4 && (
+      {users.length > 3 && (
         <div className={`${styles.readerBubble} ${styles.readerMore}`}>
           +{users.length - 4}
         </div>
@@ -320,22 +320,20 @@ function BookCard({ book, currentUser, onFavoriteToggle, onClick }: {
         <div className={styles.bookTitle}>{book.title}</div>
         <div className={styles.bookAuthor}>{book.author}</div>
         
-        {book.review_count > 0 && (
-          <div style={{ marginTop: 4 }}>
-            <Stars rating={book.avg_rating ? parseFloat(book.avg_rating) : null} quantity={book.review_count} />
-          </div>
-        )}
+        <div style={{ marginTop: 4 }}>
+          <Stars rating={book.avg_rating ? parseFloat(book.avg_rating) : null} quantity={book.review_count} />
+        </div>
 
         {/* --- Favorites Indicator with Count --- */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', marginTop: '6px', color: 'rgba(232, 220, 190, 0.7)' }}>
+        {/* <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'rgba(232, 220, 190, 0.7)' }}>
           <span style={{ color: book.is_favorited_by_me ? '#ef4444' : 'rgba(232, 220, 190, 0.4)' }}>♥</span>
           <span>{book.favorite_count} {book.favorite_count === 1 ? 'favorite' : 'favorites'}</span>
-        </div>
+        </div> */}
 
         {/* --- Traces Indicator with User Badges --- */}
         {book.readers?.length > 0 && (
-          <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'rgba(232, 220, 190, 0.5)' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '2px' }}>
+            <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', alignSelf: "center", letterSpacing: '0.5px', color: '#f59e0b', marginRight: "2px" }}>
               ✍︎ Traces:
             </span>
             <UserBadges users={book.readers} titlePrefix="Traced by" />
@@ -344,8 +342,8 @@ function BookCard({ book, currentUser, onFavoriteToggle, onClick }: {
 
         {/* --- Currently Reading Indicator with User Badges --- */}
         {book.currently_reading?.length > 0 && (
-          <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'rgba(232, 220, 190, 0.5)' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '2px' }}>
+            <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', alignSelf: "center", letterSpacing: '0.5px', color: '#6d28d9cc', marginRight: "2px" }}>
               ◎ Reading:
             </span>
             <UserBadges users={book.currently_reading} titlePrefix="Currently reading:" />

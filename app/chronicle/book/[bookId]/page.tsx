@@ -937,6 +937,7 @@ export default function BookPage() {
       if (!res.ok) { router.push('/chronicle'); return }
       const data = await res.json()
       setBook(data.book)
+      console.log(data, session?.user)
       setIsCurrentlyReading(data.book.currently_reading?.includes(session?.user?.name ?? '') ?? false)
     } catch { router.push('/chronicle') }
     finally { setLoading(false) }
@@ -1008,12 +1009,10 @@ export default function BookPage() {
                 {isCurrentlyReading ? t('chronicle.currentlyReadingActive') : t('chronicle.markAsReading')}
               </button>
 
-              {validReviews.length > 0 && (
-                <div className={styles.heroAvg}>
-                  <span className={styles.heroAvgNum}>{avgRating?.toFixed(1)}</span>
-                  <Stars rating={avgRating ?? 0} quantity={validReviews.length} />
-                </div>
-              )}
+              <div className={styles.heroAvg}>
+                <span className={styles.heroAvgNum}>{avgRating?.toFixed(1)}</span>
+                <Stars rating={avgRating ?? 0} quantity={validReviews.length} />
+              </div>
 
               {book.reviews.length > 0 && (
                 <div className={styles.heroReaders}>
