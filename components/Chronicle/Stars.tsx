@@ -8,6 +8,7 @@ interface StarsProps {
   interactive?: boolean
   onSet?: (rating: number) => void
   size?: number
+  withNum?: boolean
 }
 
 export default function Stars({
@@ -16,6 +17,7 @@ export default function Stars({
   interactive = false,
   onSet,
   size = 14,
+  withNum = false
 }: StarsProps) {
   const [hovered, setHovered] = useState<number | null>(null)
   
@@ -130,10 +132,16 @@ export default function Stars({
                   />
                 </>
               )}
+
+              
             </span>
           )
         })}
       </span>
+
+      {withNum && (
+        <span style={{fontFamily: "Cinzel, serif", fontSize: "0.8rem", color: "#D97706", marginLeft: 6 }}>{rating}</span>
+      )}
 
       {/* Optional review quantity indicator */}
       {quantity != null && quantity > 0 && (

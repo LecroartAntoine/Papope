@@ -754,7 +754,8 @@ function TraceCard({ trace, t, currentUser, onEdit, onDelete, onUpdate }: {
           {langLabel && <span className={styles.reviewLang}>{langLabel}</span>}
         </div>
         <div className={styles.reviewRight}>
-          <Stars rating={parseFloat(trace.rating ?? '0')} />
+
+          <Stars rating={parseFloat(trace.rating ?? '0')} withNum />
           {isOwner && (
             <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
               <button onClick={() => onEdit?.(trace)} className={styles.traceActionBtn} title={t('chronicle.amendTrace')}>✎</button>
@@ -937,7 +938,6 @@ export default function BookPage() {
       if (!res.ok) { router.push('/chronicle'); return }
       const data = await res.json()
       setBook(data.book)
-      console.log(data, session?.user)
       setIsCurrentlyReading(data.book.currently_reading?.includes(session?.user?.name ?? '') ?? false)
     } catch { router.push('/chronicle') }
     finally { setLoading(false) }

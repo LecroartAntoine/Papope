@@ -648,6 +648,12 @@
   align-self: center;
 }
 
+.avgRatingText{
+  font-family: 'Cinzel', serif; 
+  font-size: 1rem; 
+  color: #D97706; 
+}
+
 .readerBubble {
   width: 22px;
   height: 22px;

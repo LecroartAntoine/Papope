@@ -55,7 +55,6 @@ export async function POST(req: NextRequest) {
 
     const result = await geminiRes.json()
 
-    console.log(result)
     let enrichedText = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
 
     if (!enrichedText) {

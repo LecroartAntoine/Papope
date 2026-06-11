@@ -114,7 +114,6 @@ function AvatarSection({ profile, isOwner, onUpdated, t }: {
       onUpdated()
     } catch {} finally { setUploading(false) }
   }
-  console.log(profile)
   return (
     <div className={styles.avatarSection}>
       <div className={styles.avatarRing}>

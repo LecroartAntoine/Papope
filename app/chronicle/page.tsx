@@ -321,7 +321,7 @@ function BookCard({ book, currentUser, onFavoriteToggle, onClick }: {
         <div className={styles.bookAuthor}>{book.author}</div>
         
         <div style={{ marginTop: 4 }}>
-          <Stars rating={book.avg_rating ? parseFloat(book.avg_rating) : null} quantity={book.review_count} />
+          <Stars rating={book.avg_rating ? parseFloat(book.avg_rating) : null} quantity={book.review_count} withNum />
         </div>
 
         {/* --- Favorites Indicator with Count --- */}
