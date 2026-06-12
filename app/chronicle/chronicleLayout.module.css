@@ -1,0 +1,85 @@
+.chronicleWrapper {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  background-color: #0c0813; /* Set to your theme background */
+}
+
+/* Ensure active children sit comfortably above the background effects */
+.contentContainer {
+  position: relative;
+  z-index: 10;
+}
+
+/* --- STARFIELD --- */
+.chronicleStars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.cstar {
+  position: absolute;
+  border-radius: 50%;
+  background: #e8dfc0;
+  animation: ctwinkle ease-in-out infinite alternate;
+  box-shadow: 0 0 4px rgba(232, 223, 192, 0.4);
+  will-change: opacity, transform;
+}
+
+@keyframes ctwinkle {
+  from { transform: scale(1); opacity: var(--op); }
+  to   { transform: scale(0.6); opacity: calc(var(--op) * 0.2); }
+}
+
+/* --- DRIFTING FOG (GPU-ACCELERATED) --- */
+.fogContainer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2; /* Sits over the stars to create physical depth */
+}
+
+.fogLayer1, .fogLayer2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%; /* Double-width layout allows for a seamless looping offset */
+  height: 100%;
+  background-repeat: repeat-x;
+  background-size: 50% 100%; /* Repeat precisely at 100% viewport width */
+  will-change: transform; /* Signals the browser to use GPU compositing */
+}
+
+/* Layer 1 (Slow, gentle background mist) */
+.fogLayer1 {
+  background-image: url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog1.png');
+  animation: driftLayer1 65s linear infinite;
+  opacity: 0.24; /* Subtle presence */
+}
+
+/* Layer 2 (Faster foreground drift) */
+.fogLayer2 {
+  background-image: url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog2.png');
+  animation: driftLayer2 45s linear infinite;
+  opacity: 0.32;
+}
+
+/* 
+  By moving exactly 50% (since width is 200%), the repeating image 
+  realigns seamlessly on its starting state without a visible jump.
+  Using translate3d instead of standard translateX forces hardware acceleration.
+*/
+@keyframes driftLayer1 {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes driftLayer2 {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}

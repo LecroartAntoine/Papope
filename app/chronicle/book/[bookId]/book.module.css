@@ -8,38 +8,11 @@
 
 .bookRoot { 
   min-height: 100vh; 
-  background: #06040C; 
   color: #E8DCBE; 
   font-family: 'IM Fell English', serif; 
   padding-bottom: 5rem; 
   position: relative; 
   overflow-x: hidden; 
-}
-
-.bookMist { 
-  position: fixed; 
-  inset: 0; 
-  pointer-events: none; 
-  background: radial-gradient(ellipse 60% 40% at 30% 10%, rgba(76,29,149,0.12) 0%, transparent 65%), radial-gradient(ellipse 40% 30% at 80% 80%, rgba(217,119,6,0.06) 0%, transparent 60%); 
-}
-
-.bookStars { 
-  position: fixed; 
-  inset: 0; 
-  pointer-events: none; 
-  overflow: hidden; 
-}
-
-.bstar { 
-  position: absolute; 
-  border-radius: 50%; 
-  background: #e8dfc0; 
-  animation: btwinkle ease-in-out infinite alternate; 
-}
-
-@keyframes btwinkle { 
-  from { opacity: var(--op); } 
-  to { opacity: calc(var(--op) * 0.15); } 
 }
 
 .backLink { 

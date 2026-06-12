@@ -969,13 +969,6 @@ export default function BookPage() {
 
   return (
     <div className={styles.bookRoot}>
-      <div className={styles.bookStars}>
-        {Array.from({ length: 60 }, (_, i) => ({ x: (i * 137.5 + 23) % 100, y: (i * 97.3 + 11) % 100, size: i % 5 === 0 ? 1.5 : 1, op: 0.12 + (i % 7) * 0.07, dur: 2.5 + (i % 5) })).map((s, i) => (
-          <div key={i} className={styles.bstar} style={{ left: `${s.x}%`, top: `${s.y}%`, width: s.size, height: s.size, ['--op' as string]: s.op, animationDuration: `${s.dur}s`, animationDelay: `${(i * 0.4) % 5}s` }} />
-        ))}
-      </div>
-      <div className={styles.bookMist} />
-
       <a href="/chronicle" className={styles.backLink}>{t('chronicle.backToChronicle')}</a>
 
       {loading || !book ? (

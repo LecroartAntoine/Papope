@@ -2,24 +2,11 @@
 
 .chronicleRoot {
   min-height: 100vh;
-  background: #06040C;
   color: #E8DCBE;
   font-family: 'IM Fell English', serif;
   padding: 0 0 6rem;
   position: relative;
   overflow-x: hidden;
-}
-
-/* Mist overlay */
-.mist {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(76,29,149,0.2) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 30% at 10% 80%, rgba(109,40,217,0.15) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 90% 60%, rgba(217,119,6,0.1) 0%, transparent 60%),
-    radial-gradient(ellipse 35% 25% at 50% 50%, rgba(139, 69, 19, 0.08) 0%, transparent 50%);
 }
 
 /* Moon container */
@@ -65,30 +52,6 @@
   object-fit: contain;
 }
 
-/* Stars */
-.chronicleStars {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-.cstar {
-  position: absolute;
-  border-radius: 50%;
-  background: #e8dfc0;
-  animation: ctwinkle ease-in-out infinite alternate;
-  box-shadow: 0 0 6px rgba(232, 223, 192, 0.6), 0 0 12px rgba(232, 223, 192, 0.3);
-}
-@keyframes ctwinkle {
-  from { opacity: var(--op); transform: scale(1); }
-  to   { opacity: calc(var(--op) * 0.2); transform: scale(0.5); }
-}
-
-/* Mystical glow effect */
-@keyframes mysticalPulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(217, 119, 6, 0.3), 0 0 16px rgba(109, 40, 217, 0.2); }
-  50% { box-shadow: 0 0 12px rgba(217, 119, 6, 0.5), 0 0 24px rgba(109, 40, 217, 0.35); }
-}
 
 /* -- Header -- */
 .chronicleHeader {
@@ -909,7 +872,7 @@
 }
 .backNav:hover { color: rgba(232,220,190,0.9); }
 
-/* -- Floating Librarian Button (FAB) -- */
+/* --- Floating Librarian Button (FAB) --- */
 .librarianFab {
   position: fixed;
   bottom: 2rem;
@@ -919,8 +882,8 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1.25rem;
-  background: linear-gradient(135deg, rgba(217, 119, 6, 0.6) 0%, rgba(109, 40, 217, 0.4) 100%);
-  border: 1px solid rgba(217, 119, 6, 0.7);
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.75) 0%, rgba(109, 40, 217, 0.5) 100%);
+  border: 1px solid rgba(223, 177, 91, 0.4);
   color: #E8DCBE;
   text-decoration: none;
   border-radius: 50px;
@@ -929,15 +892,15 @@
   font-weight: 600;
   letter-spacing: 0.05em;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.25), 0 0 20px rgba(217, 119, 6, 0.15);
+  box-shadow: 0 4px 20px rgba(217, 119, 6, 0.3), 0 0 20px rgba(109, 40, 217, 0.15);
   white-space: nowrap;
   cursor: pointer;
 }
 
 .librarianFab:hover {
-  background: linear-gradient(135deg, rgba(217, 119, 6, 0.8) 0%, rgba(109, 40, 217, 0.6) 100%);
-  border-color: rgba(217, 119, 6, 0.9);
-  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.4), 0 0 30px rgba(217, 119, 6, 0.25);
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.9) 0%, rgba(109, 40, 217, 0.65) 100%);
+  border-color: #dfb15b;
+  box-shadow: 0 8px 30px rgba(217, 119, 6, 0.45), 0 0 30px rgba(109, 40, 217, 0.25);
   transform: translateY(-2px);
 }
 

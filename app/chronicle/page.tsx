@@ -573,22 +573,7 @@ export default function ChroniclePage() {
             backgroundImage: 'url(/images/moon.png)',
           }}
         />
-      <div className={styles.mist} />
-      <div className={styles.chronicleStars}>
-        {Array.from({ length: 80 }, (_, i) => ({
-          x: (i * 137.5 + 23) % 100, y: (i * 97.3 + 11) % 100,
-          size: i % 5 === 0 ? 2 : 1, op: 0.1 + (i % 7) * 0.06, dur: 2 + (i % 5),
-        })).map((s, i) => (
-          <div key={i} className={styles.cstar} style={{
-            left: `${s.x}%`, top: `${s.y}%`,
-            width: s.size, height: s.size,
-            ['--op' as string]: s.op,
-            animationDuration: `${s.dur}s`,
-            animationDelay: `${(i * 0.4) % 5}s`,
-          }} />
-        ))}
-      </div>
-      
+
       {/* Top Navigation Wrapper for Back Nav & Self Profile Nav */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <Link href="/" className={styles.backNav}>
