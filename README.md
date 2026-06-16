@@ -2,7 +2,7 @@
 
 ---
 
-![marcass](./marcass.png)
+![marcass](./public/favicon.svg)
 
 ---
 
