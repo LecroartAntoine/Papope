@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useI18n } from '@/lib/i18n/context'
+import Link from 'next/link'
 
 
 const STARS = Array.from({ length: 120 }, (_, i) => ({
@@ -502,19 +503,20 @@ export default function OraclePage() {
         }
 
         /* Bottom nav */
-        .bottom-nav {
-          position: fixed;
-          bottom: 20px;
-          left: 50%;
-          transform: translateX(-50%);
+        .back-nav {
+          display: absolute;
+          left: 0;
+          gap: 8px;
           font-family: 'Inconsolata', monospace;
-          font-size: 0.9rem;
+          font-size: 0.68rem;
           letter-spacing: 0.2em;
-          color: rgba(200,170,100,0.85);
+          text-transform: uppercase;
+          color: rgba(232,220,190,0.55); /* Increased contrast from 0.3 */
           text-decoration: none;
+          padding: 1.2rem 2rem 0;
           transition: color 0.2s;
         }
-        .bottom-nav:hover { color: rgba(220,190,120,1); }
+        .back-nav:hover { color: rgba(220,190,120,1); }
 
         @media (max-width: 480px) {
           .prophecy-wrap { padding: 20px 18px; }
@@ -523,88 +525,91 @@ export default function OraclePage() {
       `}</style>
 
       <div className="oracle-root">
+        <Link href="/" className="back-nav">
+          {t('oracle.backToHome')}
+        </Link>
         <Starfield />
         <div className={`glow-orb ${phase !== 'idle' ? 'active' : ''}`} />
 
         {/* Eye */}
         <CosmicEye state={phase === 'thinking' ? 'thinking' : phase === 'result' ? 'done' : 'idle'} />
 
-         {/* Title */}
-         <h1 className="oracle-title">{t('oracle.title')}</h1>
+        {/* Title */}
+        <h1 className="oracle-title">{t('oracle.title')}</h1>
 
-         {/* Idle state */}
-         {phase === 'idle' && (
-           <div className="question-area">
-             <p className="question-label">
-               {t('oracle.description')}
-             </p>
-             <input
-               ref={inputRef}
-               className="question-input"
-               type="text"
-               maxLength={200}
-               placeholder={t('oracle.description')}
-               value={question}
-               onChange={e => setQuestion(e.target.value)}
-               onKeyDown={handleKey}
-               autoFocus
-             />
-             <button className="consult-btn" onClick={consult}>
-               {t('oracle.title')}
-             </button>
-           </div>
-         )}
-
-         {/* Thinking state */}
-         {phase === 'thinking' && (
-           <div style={{ textAlign: 'center' }}>
-             <div className="divider"><span>{t('oracle.calculations')}</span></div>
-             <div key={thinkingMsg} className="thinking-msg">{thinkingMsg}</div>
-           </div>
-         )}
-
-        {/* Result */}
-        {phase === 'result' && (
-          <>
-            {question && (
-              <div style={{ fontFamily: 'Inconsolata, monospace', fontSize: '0.85rem',
-                color: 'rgba(180,140,60,0.9)', letterSpacing: '0.1em',
-                marginBottom: '1rem', fontStyle: 'italic', textAlign: 'center',
-                maxWidth: 420 }}>
-                 {t('oracle.re')} "{question.length > 80 ? question.slice(0, 80) + '…' : question}"
-              </div>
-            )}
-            <div className="prophecy-wrap">
-                <div className="prophecy-label">{t('oracle.readingLabel', { n: consultCount })}</div>
-               <p className="prophecy-text">
-                 <TypewriterText text={prophecy} speed={16} />
-               </p>
-               {ingredients && (
-                 <div className="prophecy-footer">
-                   <button className="again-btn" onClick={reset}>{t("oracle.nextReading")}</button>
-                 </div>
-               )}
-             </div>
-          </>
+        {/* Idle state */}
+        {phase === 'idle' && (
+          <div className="question-area">
+            <p className="question-label">
+              {t('oracle.description')}
+            </p>
+            <input
+              ref={inputRef}
+              className="question-input"
+              type="text"
+              maxLength={200}
+              placeholder={t('oracle.description')}
+              value={question}
+              onChange={e => setQuestion(e.target.value)}
+              onKeyDown={handleKey}
+              autoFocus
+            />
+            <button className="consult-btn" onClick={consult}>
+              {t('oracle.title')}
+            </button>
+          </div>
         )}
 
-         {/* Error */}
-         {phase === 'error' && (
-           <div style={{ textAlign: 'center' }}>
-             <div className="error-msg">
-               {t('oracle.onStrike')}
-             </div>
-             <button className="again-btn" style={{ marginTop: 16 }} onClick={reset}>{t('oracle.checkIfBack')}</button>
-           </div>
-         )}
+        {/* Thinking state */}
+        {phase === 'thinking' && (
+          <div style={{ textAlign: 'center' }}>
+            <div className="divider"><span>{t('oracle.calculations')}</span></div>
+            <div key={thinkingMsg} className="thinking-msg">{thinkingMsg}</div>
+          </div>
+        )}
 
-         {consultCount > 0 && (
-           <div className="consult-counter">
-             {t('oracle.soulsConsulted', { n: consultCount })}
-           </div>
-         )}
+      {/* Result */}
+      {phase === 'result' && (
+        <>
+          {question && (
+            <div style={{ fontFamily: 'Inconsolata, monospace', fontSize: '0.85rem',
+              color: 'rgba(180,140,60,0.9)', letterSpacing: '0.1em',
+              marginBottom: '1rem', fontStyle: 'italic', textAlign: 'center',
+              maxWidth: 420 }}>
+                {t('oracle.re')} "{question.length > 80 ? question.slice(0, 80) + '…' : question}"
+            </div>
+          )}
+          <div className="prophecy-wrap">
+              <div className="prophecy-label">{t('oracle.readingLabel', { n: consultCount })}</div>
+              <p className="prophecy-text">
+                <TypewriterText text={prophecy} speed={16} />
+              </p>
+              {ingredients && (
+                <div className="prophecy-footer">
+                  <button className="again-btn" onClick={reset}>{t("oracle.nextReading")}</button>
+                </div>
+              )}
+            </div>
+        </>
+      )}
 
-         <a href="/" className="bottom-nav">{t("oracle.backToHome")}</a>
+        {/* Error */}
+        {phase === 'error' && (
+          <div style={{ textAlign: 'center' }}>
+            <div className="error-msg">
+              {t('oracle.onStrike')}
+            </div>
+            <button className="again-btn" style={{ marginTop: 16 }} onClick={reset}>{t('oracle.checkIfBack')}</button>
+          </div>
+        )}
+
+        {consultCount > 0 && (
+          <div className="consult-counter">
+            {t('oracle.soulsConsulted', { n: consultCount })}
+          </div>
+        )}
+
+        
       </div>
     </>
   )
