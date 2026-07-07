@@ -96,86 +96,6 @@ function TraceRow({ trace, isOwner, t }: { trace: UserTrace; isOwner: boolean; t
   )
 }
 
-// ─── Avatar Upload ────────────────────────────────────────────────────────────
-
-function AvatarSection({ profile, isOwner, onUpdated, t }: {
-  profile: UserProfile; isOwner: boolean; onUpdated: () => void; t: (k: string) => string
-}) {
-  const [uploading, setUploading] = useState(false)
-
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setUploading(true)
-    const formData = new FormData()
-    formData.append('avatar', file)
-    try {
-      await fetch('/api/chronicle/user/avatar', { method: 'POST', body: formData })
-      onUpdated()
-    } catch {} finally { setUploading(false) }
-  }
-  return (
-    <div className={styles.avatarSection}>
-      <div className={styles.avatarRing}>
-        {profile.avatar_url
-          ? <img src={profile.avatar_url} alt={profile.username} className={styles.avatarImg} />
-          : <div className={styles.avatarPlaceholder}>{profile.username.slice(0, 2).toUpperCase()}</div>
-        }
-        {isOwner && (
-          <label className={styles.avatarEditBtn} title={t('chronicle.changeAvatar')}>
-            {uploading ? '…' : '✎'}
-            <input type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
-          </label>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// ─── Bio Edit ────────────────────────────────────────────────────────────────
-
-function BioSection({ profile, isOwner, onUpdated, t }: {
-  profile: UserProfile; isOwner: boolean; onUpdated: () => void; t: (k: string) => string
-}) {
-  const [editing, setEditing] = useState(false)
-  const [bio, setBio] = useState(profile.bio ?? '')
-  const [saving, setSaving] = useState(false)
-
-  const save = async () => {
-    setSaving(true)
-    try {
-      await fetch('/api/chronicle/user/bio', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bio }),
-      })
-      onUpdated(); setEditing(false)
-    } catch {} finally { setSaving(false) }
-  }
-
-  if (editing) return (
-    <div className={styles.bioEdit}>
-      <textarea className={styles.bioTextarea} value={bio} onChange={e => setBio(e.target.value)} rows={3} placeholder={t('chronicle.bioPlaceholder')} />
-      <div className={styles.bioActions}>
-        <button className={styles.bioCancel} onClick={() => setEditing(false)}>{t('chronicle.cancel')}</button>
-        <button className={styles.bioSave} onClick={save} disabled={saving}>{saving ? '…' : t('chronicle.saveWhisper')}</button>
-      </div>
-    </div>
-  )
-
-  return (
-    <div className={styles.bioDisplay}>
-      {profile.bio
-        ? <p className={styles.bioText}>{profile.bio}</p>
-        : isOwner && <p className={styles.bioEmpty} onClick={() => setEditing(true)}>{t('chronicle.addBioPrompt')}</p>
-      }
-      {isOwner && profile.bio && (
-        <button className={styles.bioEditBtn} onClick={() => setEditing(true)}>✎</button>
-      )}
-    </div>
-  )
-}
-
 // ─── Tabs ────────────────────────────────────────────────────────────────────
 
 type Tab = 'traces' | 'favorites'
@@ -233,8 +153,6 @@ export default function UserProfilePage() {
       </div>
       <div className={styles.profileMist} />
 
-      <a href="/chronicle" className={styles.backLink}> {t('chronicle.backToChronicle')}</a>
-
       {loading ? (
         <div className={styles.loadingState}>{t('chronicle.openingTome')}</div>
       ) : !profile ? (
@@ -242,10 +160,17 @@ export default function UserProfilePage() {
       ) : (
         <>
           <div className={styles.profileHeader}>
-            <AvatarSection profile={profile} isOwner={isOwner} onUpdated={fetchProfile} t={t} />
+            <div className={styles.avatarSection}>
+              <div className={styles.avatarRing}>
+                {profile.avatar_url
+                  ? <img src={profile.avatar_url} alt={profile.username} className={styles.avatarImg} />
+                  : <div className={styles.avatarPlaceholder}>{profile.username.slice(0, 2).toUpperCase()}</div>
+                }
+              </div>
+            </div>
             <h1 className={styles.profileName}>{profile.username}</h1>
             {isOwner && <div className={styles.profileOwnerBadge}>✦ {t('chronicle.yourSanctum')} ✦</div>}
-            <BioSection profile={profile} isOwner={isOwner} onUpdated={fetchProfile} t={t} />
+            {profile.bio && <p className={styles.bioText}>{profile.bio}</p>}
           </div>
 
           <div className={styles.profileDivider}><span>✦</span></div>
@@ -278,7 +203,6 @@ export default function UserProfilePage() {
 
           <div className={styles.profileContent}>
             {tab === 'traces' && (
-              // FIXED: Mapping over the sorted traces list instead of raw order
               sortedTraces.length === 0
                 ? <p className={styles.profileEmpty}>{t('chronicle.noTracesYet')}</p>
                 : sortedTraces.map(trace => <TraceRow key={trace.id} trace={trace} isOwner={isOwner} t={t} />)

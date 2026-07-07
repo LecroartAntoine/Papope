@@ -9,6 +9,9 @@ import { useI18n } from '@/lib/i18n/context'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
+import Editor from '@uiw/react-md-editor'
+import "@uiw/react-md-editor/markdown-editor.css";
 import styles from './book.module.css'
 import { useUserAvatar } from '@/app/chronicle/page'
 import Stars from '@/components/Chronicle/Stars'
@@ -398,17 +401,26 @@ function AddTraceForm({ bookId, onAdded, t, username }: {
   const [enriching, setEnriching] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+  const [originalRecommendation, setOriginalRecommendation] = useState<string | null>(null)
 
   const enrichTrace = async () => {
     if (!form.recommendation.trim()) { setError('Écris d\'abord ta trace'); return }
     setEnriching(true); setError('')
+    const before = form.recommendation
     try {
       const res = await fetch('/api/chronicle/enrich-trace', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recommendation: form.recommendation }) })
       if (!res.ok) throw new Error()
       const data = await res.json()
       setForm(f => ({ ...f, recommendation: data.enrichedRecommendation }))
+      setOriginalRecommendation(before)
     } catch { setError('Failed to enrich trace') }
     finally { setEnriching(false) }
+  }
+
+  const revertTrace = () => {
+    if (originalRecommendation === null) return
+    setForm(f => ({ ...f, recommendation: originalRecommendation }))
+    setOriginalRecommendation(null)
   }
 
   const submit = async () => {
@@ -434,6 +446,7 @@ function AddTraceForm({ bookId, onAdded, t, username }: {
       setTimeout(() => {
         setDone(false); setOpen(false)
         setForm({ date_read: '', rating: 0, recommendation: '', language_read: '', dimensions: { readability: null, writing: null, length: null, pacing: null, originality: null, emotion: null } })
+        setOriginalRecommendation(null)
       }, 1800)
     } catch { setError(t('chronicle.spellFailed')) }
     finally { setLoading(false) }
@@ -499,11 +512,24 @@ function AddTraceForm({ bookId, onAdded, t, username }: {
           <div>
             <label className={styles.fieldLabel} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>{t('chronicle.recommendation')}</span>
-              <button type="button" onClick={enrichTrace} disabled={enriching || !form.recommendation.trim()}
-                className={styles.enrichBtn}>{enriching ? '✨ ' + t('chronicle.enriching') : '✨ ' + t('chronicle.enrich')}</button>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {originalRecommendation !== null && (
+                  <button type="button" onClick={revertTrace} disabled={enriching}
+                    className={styles.revertBtn}>↺ {t('chronicle.revertToOriginal')}</button>
+                )}
+                <button type="button" onClick={enrichTrace} disabled={enriching || !form.recommendation.trim()}
+                  className={styles.enrichBtn}>{enriching ? '✨ ' + t('chronicle.enriching') : '✨ ' + t('chronicle.enrich')}</button>
+              </div>
             </label>
-            <textarea className={styles.fieldTextarea} placeholder={t('chronicle.whatYouThought')} value={form.recommendation}
-              onChange={e => setForm(f => ({ ...f, recommendation: e.target.value }))} />
+            <div data-color-mode="dark">
+              <Editor
+                value={form.recommendation}
+                onChange={(val) => setForm(f => ({ ...f, recommendation: val || '' }))}
+                height={200}
+                preview="edit"
+                textareaProps={{ placeholder: t('chronicle.whatYouThought') }}
+              />
+            </div>
           </div>
 
           {error && <p className={styles.formError}>{error}</p>}
@@ -533,17 +559,26 @@ function EditTracePanel({ trace, onClose, onSaved, t }: { trace: Trace; onClose:
    const [loading, setLoading] = useState(false)
    const [enriching, setEnriching] = useState(false)
    const [error, setError] = useState('')
+   const [originalRecommendation, setOriginalRecommendation] = useState<string | null>(null)
 
    const enrichTrace = async () => {
      if (!form.recommendation.trim()) { setError('Écris d\'abord ta trace'); return }
      setEnriching(true); setError('')
+     const before = form.recommendation
      try {
        const res = await fetch('/api/chronicle/enrich-trace', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recommendation: form.recommendation }) })
        if (!res.ok) throw new Error()
        const data = await res.json()
        setForm(f => ({ ...f, recommendation: data.enrichedRecommendation }))
+       setOriginalRecommendation(before)
      } catch { setError('Failed to enrich trace') }
      finally { setEnriching(false) }
+   }
+
+   const revertTrace = () => {
+     if (originalRecommendation === null) return
+     setForm(f => ({ ...f, recommendation: originalRecommendation }))
+     setOriginalRecommendation(null)
    }
 
    const submit = async () => {
@@ -600,10 +635,23 @@ function EditTracePanel({ trace, onClose, onSaved, t }: { trace: Trace; onClose:
        <div>
          <label className={styles.fieldLabel} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
            <span>{t('chronicle.recommendation')}</span>
-           <button type="button" onClick={enrichTrace} disabled={enriching || !form.recommendation.trim()}
-             className={styles.enrichBtn}>{enriching ? '✨ ' + t('chronicle.enriching') : '✨ ' + t('chronicle.enrich')}</button>
+           <div style={{ display: 'flex', gap: 6 }}>
+             {originalRecommendation !== null && (
+               <button type="button" onClick={revertTrace} disabled={enriching}
+                 className={styles.revertBtn}>↺ {t('chronicle.revertToOriginal')}</button>
+             )}
+             <button type="button" onClick={enrichTrace} disabled={enriching || !form.recommendation.trim()}
+               className={styles.enrichBtn}>{enriching ? '✨ ' + t('chronicle.enriching') : '✨ ' + t('chronicle.enrich')}</button>
+           </div>
          </label>
-         <textarea className={styles.fieldTextarea} value={form.recommendation} onChange={e => setForm(f => ({ ...f, recommendation: e.target.value }))} />
+         <div data-color-mode="dark">
+           <Editor
+             value={form.recommendation}
+             onChange={(val) => setForm(f => ({ ...f, recommendation: val || '' }))}
+             height={200}
+             preview="edit"
+           />
+         </div>
        </div>
        {error && <p className={styles.formError}>{error}</p>}
        <div className={styles.formActions}>
@@ -766,7 +814,11 @@ function TraceCard({ trace, t, currentUser, onEdit, onDelete, onUpdate }: {
       </div>
 
       {trace.recommendation && (
-        <blockquote className={styles.reviewText}>"{trace.recommendation}"</blockquote>
+        <blockquote className={styles.reviewText}>
+          <div className={styles.markdownContent}>
+            <ReactMarkdown>{trace.recommendation}</ReactMarkdown>
+          </div>
+        </blockquote>
       )}
 
       {trace.dimensions && <DimensionDisplay dims={trace.dimensions} t={t} />}
@@ -914,6 +966,25 @@ function HeroReaderAvatar({ username }: { username: string }) {
   )
 }
 
+// ─── CurrentlyReadingUsers ───────────────────────────────────────────────────
+
+function CurrentlyReadingUsers({ users, t }: { users: string[]; t: (k: string) => string }) {
+  if (!users || users.length === 0) return null
+  
+  return (
+    <div className={styles.currentlyReadingList}>
+      <span className={styles.readingLabel}>{t('chronicle.currentlyReading')}: </span>
+      <div className={styles.currentlyReadingAvatars}>
+        {users.map((name, i) => (
+          <div key={i} className={styles.currentlyReadingUser} title={name}>
+            <HeroReaderAvatar username={name} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function BookPage() {
@@ -969,8 +1040,6 @@ export default function BookPage() {
 
   return (
     <div className={styles.bookRoot}>
-      <a href="/chronicle" className={styles.backLink}>{t('chronicle.backToChronicle')}</a>
-
       {loading || !book ? (
         <div className={styles.loadingState}>{t('chronicle.openingTome')}</div>
       ) : (
@@ -993,6 +1062,8 @@ export default function BookPage() {
                 <button className={styles.editBookBtn} onClick={() => setShowEditBook(v => !v)}>✎ {t('chronicle.amendVolume')}</button>
               </div>
               <p className={styles.bookHeroAuthor}>{book.author}</p>
+
+              <CurrentlyReadingUsers users={book.currently_reading ?? []} t={t} />
 
               <button
                 className={`${styles.readingToggle} ${isCurrentlyReading ? styles.active : ''}`}

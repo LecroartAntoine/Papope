@@ -13,26 +13,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'recommendation is required' }, { status: 400 })
     }
 
-    const enrichmentPrompt = `
-      Rewrite this book review to be more eloquent, polished, and engaging. Keep the same sentiment and message but improve clarity and style. ONLY RETURN THE REVIEW, NO THINKING TEXT OR ANALYSIS OR OPTIONS
+    const systemInstruction = `You are a light copy-editor, not a rewriter. You fix spelling, grammar, punctuation, and clean up sentence structure so the text reads smoothly. You do not rewrite in a "nicer" or more literary way.
 
-      Original: "${recommendation}"`
+Hard rules:
+- Keep the same language as the original (do not translate).
+- Keep the same register: if it's casual/conversational, it stays casual/conversational. Never upgrade to a formal or literary register.
+- Never replace a simple, common word with a fancier or rarer synonym (e.g. do not turn "bon" into "excellent", "j'ai aimé" into "j'ai été conquis", "book" into "work" or "tome"). If the word the person chose is correct, leave it.
+- Do not add adjectives, imagery, metaphors, or flourishes that were not in the original.
+- Do not add new opinions, facts, or details that were not stated.
+- Keep roughly the same length. This is a light correction pass, not an expansion.
+- You may use markdown only if it helps structure that's already implicit (e.g. a short list the person clearly enumerated with commas or line breaks, or emphasis on a word they clearly stressed). Do not invent structure or emphasis that wasn't there.
+- If the original has an informal quirk (contractions, sentence fragments, casual punctuation like "..." or "!") that isn't an actual error, leave it as is.
+
+Return ONLY the corrected text. No preamble, no explanation, no quotation marks around it, no alternative versions.`
+
+    const userPrompt = `Text to lightly correct (fix spelling/grammar/structure only, do not elevate the style):\n\n${recommendation}`
 
     const requestBody = {
-      // 1. Put the strict rules in the system instructions
       systemInstruction: {
-        parts: [{ 
-          text: "You are an expert editor. Rewrite the provided text to be more polished, and engaging. Keep the same sentiment and message but improve clarity and style. RETURN ONLY THE REWRITTEN TEXT. Do not include any preamble, analysis, thinking text, or alternative options. Try to respect the original style." 
-        }]
+        parts: [{ text: systemInstruction }]
       },
       contents: [
         {
           role: 'user',
-          parts: [{ text: `Original text to rewrite:\n"${recommendation}"` }],
+          parts: [{ text: userPrompt }],
         },
       ],
       generationConfig: { 
-        temperature: 0.3 
+        temperature: 0.2 
       },
     }
 

@@ -224,10 +224,6 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : t('login.signIn')}
             </button>
           </form>
-
-          <div className="login-footer">
-            <Link href="/">{t('login.backToHome')}</Link>
-          </div>
         </div>
       </div>
     </>

@@ -2,7 +2,6 @@
 
 import { useI18n } from '@/lib/i18n/context'
 import { useRef, useEffect, useState } from 'react'
-import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import styles from './librarian.module.css'
 
@@ -102,9 +101,6 @@ export default function LibrarianPage() {
     <div className={styles['librarian-root']}>
       {/* Header */}
       <header className={styles.header}>
-        <Link href="/chronicle" className={styles['back-link']}>
-          {t('librarian.backToChronicle')}
-        </Link>
         <h1 className={styles.title}>{t('librarian.title')}</h1>
         <p className={styles.subtitle}>{t('librarian.subtitle')}</p>
         <p className={styles.description}>{t('librarian.description')}</p>

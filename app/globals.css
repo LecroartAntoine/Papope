@@ -48,6 +48,7 @@ body {
   font-family: var(--font-mono);
   background: #141414;
   min-height: 100vh;
+  padding-top: 56px;
 }
 
 /* Keep Pushing grid background */

@@ -18,14 +18,6 @@ export default function GamesPortal() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-[#e8e4dd] font-mono p-8 flex flex-col items-center justify-center relative">
-      <div className="fixed
-          bottom-5
-          left-1/2
-          -translate-x-1/2">
-        <Link href="/" className="text-[#888] hover:text-[#e8e4dd] transition-colors text-sm">
-          {t('games.backToHome')}
-        </Link>
-      </div>
       
       <div className="max-w-xl w-full">
         <h1 className="text-4xl font-bold mb-8 text-center uppercase tracking-widest text-[#c8f135]">

@@ -1,10 +1,9 @@
 ﻿'use client'
 
 import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import { useI18n } from '@/lib/i18n/context'
-import { LanguageSelector } from '@/components/LanguageSelector'
 
 export default function HomePage() {
   const { t } = useI18n()
@@ -260,12 +259,11 @@ export default function HomePage() {
 
       <div className="home-root">
         <div className="home-content">
-          {/* Header with Language Selector */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '2rem' }}>
             <div className="home-header" style={{ margin: 0 }}>
               <h1 className="home-title">PAPOPE</h1>
             </div>
-            <LanguageSelector />
           </div>
 
           {/* All Sections */}
@@ -283,24 +281,6 @@ export default function HomePage() {
               }
             })}
           </div>
-
-          {/* Login CTA for unauthenticated users */}
-          {!isAuthenticated && (
-            <div className="home-actions">
-              <Link href="/login" className="btn">
-                {t('login.signIn')}
-              </Link>
-            </div>
-          )}
-
-          {/* Admin link */}
-          {isAuthenticated && session?.user?.isAdmin && (
-            <div className="home-actions">
-              <Link href="/admin" className="btn secondary">
-                Administration
-              </Link>
-            </div>
-          )}
 
           <div className="home-footer">
             {t('homepage.footer')}

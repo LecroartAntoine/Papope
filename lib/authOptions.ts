@@ -21,7 +21,7 @@ export const authOptions: NextAuthOptions = {
 
           // Find user in database
           const result = await sql`
-            SELECT id, username, password_hash, is_admin FROM users 
+            SELECT id, username, password_hash, is_admin, avatar_url FROM users 
             WHERE username = ${credentials.username}
           `
 
@@ -53,6 +53,7 @@ export const authOptions: NextAuthOptions = {
             email: `${user.username}@local`,
             isAdmin: user.is_admin,
             sections,
+            image: user.avatar_url,
           }
         } catch (error) {
           console.error('Auth error:', error)
@@ -75,6 +76,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.isAdmin = (user as any).isAdmin
         token.sections = (user as any).sections
+        token.image = (user as any).image
       }
       return token
     },
@@ -83,6 +85,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.isAdmin = token.isAdmin as boolean
         session.user.sections = token.sections as string[]
+        session.user.image = token.image as string | null
       }
       return session
     },

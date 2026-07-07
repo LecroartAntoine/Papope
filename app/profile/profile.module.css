@@ -1,0 +1,420 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&family=Inconsolata:wght@400;500&display=swap');
+
+:global(*) {
+  box-sizing: border-box;
+}
+
+.profileRoot {
+  min-height: 100vh;
+  color: #E8DCBE;
+  font-family: 'IM Fell English', serif;
+  background: #141414;
+  padding: 2rem 1.5rem 4rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.profileContent {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.profileHeader {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatarSection {
+  position: relative;
+}
+
+.avatarWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(200, 241, 53, 0.3);
+  box-shadow: 0 0 30px rgba(200, 241, 53, 0.15), 0 0 60px rgba(109, 40, 217, 0.1);
+}
+
+.avatarPlaceholder {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(109, 40, 217, 0.3), rgba(200, 241, 53, 0.2));
+  border: 3px solid rgba(200, 241, 53, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #F0EDE6;
+  box-shadow: 0 0 30px rgba(200, 241, 53, 0.15), 0 0 60px rgba(109, 40, 217, 0.1);
+}
+
+.avatarEditBtn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #D97706, #92400E);
+  border: 2px solid #141414;
+  color: #141414;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.avatarEditBtn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.avatarModal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarModalOverlay {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  padding: 2rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarModalContent {
+  background: #0D0914;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 320px;
+  width: 100%;
+}
+
+.avatarModalLabel {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.85rem;
+  color: rgba(240, 237, 230, 0.7);
+  cursor: pointer;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.avatarModalLabel:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #C8F135;
+}
+
+.avatarModalCancel {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(232, 220, 190, 0.65);
+  background: transparent;
+  border: 1px solid rgba(232, 220, 190, 0.15);
+  padding: 6px 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.avatarModalCancel:hover {
+  border-color: rgba(232, 220, 190, 0.35);
+  color: rgba(232, 220, 190, 0.9);
+}
+
+.profileName {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 600;
+  color: #F0EDE6;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.principalEmail {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.85rem;
+  color: rgba(240, 237, 230, 0.5);
+  letter-spacing: 0.05em;
+  margin: 0;
+  font-weight: 300;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 1.5rem;
+  opacity: 0.5;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c8a840, transparent);
+}
+
+.divider span {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  color: #c8a840;
+  text-transform: uppercase;
+}
+
+.section {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 1rem;
+}
+
+.sectionTitle {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(240, 237, 230, 0.6);
+  margin: 0;
+  text-align: left;
+}
+
+.infoRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.infoLabel {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(240, 237, 230, 0.4);
+}
+
+.infoValue {
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.95rem;
+  color: rgba(240, 237, 230, 0.85);
+}
+
+.bioEdit {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(232, 220, 190, 0.15);
+  border-radius: 4px;
+  color: #E8DCBE;
+  font-family: 'IM Fell English', serif;
+  font-size: 0.9rem;
+  padding: 12px 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+
+.bioEdit:focus {
+  border-color: rgba(200, 241, 53, 0.5);
+}
+
+.bioEdit::placeholder {
+  color: rgba(232, 220, 190, 0.35);
+  font-style: italic;
+}
+
+.bioActions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.bioCancel,
+.bioSave {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bioCancel {
+  color: rgba(232, 220, 190, 0.65);
+  background: transparent;
+  border: 1px solid rgba(232, 220, 190, 0.15);
+}
+
+.bioCancel:hover {
+  border-color: rgba(232, 220, 190, 0.35);
+  color: rgba(232, 220, 190, 0.9);
+}
+
+.bioSave {
+  color: #141414;
+  background: #C8F135;
+  border: none;
+}
+
+.bioSave:hover {
+  background: #d4ff47;
+  transform: translateY(-1px);
+}
+
+.editBioBtn {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(200, 241, 53, 0.7);
+  background: transparent;
+  border: 1px solid rgba(200, 241, 53, 0.3);
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.editBioBtn:hover {
+  color: #C8F135;
+  border-color: rgba(200, 241, 53, 0.6);
+  background: rgba(200, 241, 53, 0.05);
+}
+
+.navGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: rgba(240, 237, 230, 0.75);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.navItem:hover {
+   color: #C8F135;
+   background: rgba(200, 241, 53, 0.08);
+   border-color: rgba(200, 241, 53, 0.3);
+ }
+
+ .adminNavItem {
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+   text-decoration: none;
+   color: rgba(200, 241, 53, 0.8);
+   font-family: 'Space Mono', monospace;
+   font-size: 0.75rem;
+   letter-spacing: 0.05em;
+   text-transform: uppercase;
+   padding: 0.5rem 0.75rem;
+   border-radius: 4px;
+   transition: all 0.2s;
+   background: rgba(200, 241, 53, 0.05);
+   border: 1px solid rgba(200, 241, 53, 0.3);
+ }
+
+ .adminNavItem:hover {
+   color: #141414;
+   background: #C8F135;
+   border-color: rgba(200, 241, 53, 0.5);
+ }
+
+ .loadingState {
+  text-align: center;
+  padding: 4rem 2rem;
+  font-style: italic;
+  color: rgba(240, 237, 230, 0.55);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+}
+
+@media (max-width: 600px) {
+  .profileContent {
+    padding: 0 1rem;
+  }
+
+  .profileHeader {
+    gap: 0.75rem;
+  }
+
+  .avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .avatarPlaceholder {
+    width: 80px;
+    height: 80px;
+    font-size: 2.2rem;
+  }
+
+  .avatarEditBtn {
+    width: 24px;
+    height: 24px;
+    font-size: 0.6rem;
+  }
+
+  .navGrid {
+    grid-template-columns: 1fr;
+  }
+}

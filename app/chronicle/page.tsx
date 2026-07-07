@@ -86,11 +86,11 @@ export function useUserAvatar(username: string | null | undefined) {
 // ─── Categories ──────────────────────────────────────────────────────────────
 
 export const CATEGORY_GROUPS: Record<string, string[]> = {
-  'chronicle.catGroup.form': ['Novel', 'Short Story', 'Novella', 'Essay', 'Poetry', 'Play', 'Graphic Novel', 'Manga', 'Comics', 'Illustrated'],
-  'chronicle.catGroup.genre': ['Fantasy', 'Sci-Fi', 'Horror', 'Thriller', 'Mystery', 'Romance', 'Historical Fiction', 'Literary Fiction', 'Dystopia', 'Mythology'],
-  'chronicle.catGroup.knowledge': ['Philosophy', 'History', 'Science', 'Politics', 'Biography', 'Memoir', 'Psychology', 'Sociology', 'Economics', 'Self-Help'],
-  'chronicle.catGroup.audience': ['Young Adult', 'Middle Grade', 'Children'],
-  'chronicle.catGroup.other': ['Anthology', 'Travel', 'Cooking', 'Art & Design', 'Other'],
+  'chronicle.catGroup.form': ['Comics', 'Essay', 'Graphic Novel', 'Illustrated', 'Manga', 'Novel', 'Novella', 'Play', 'Poetry', 'Short Story'],
+  'chronicle.catGroup.genre': ['Action & Adventure', 'Classics', 'Contemporary', 'Crime', 'Dystopia', 'Fantasy', 'Historical Fiction', 'Horror', 'Humor', 'Literary Fiction', 'Magical Realism', 'Mystery', 'Mythology', 'Romance', 'Satire', 'Sci-Fi', 'Thriller', 'Western'],
+  'chronicle.catGroup.knowledge': ['Biography', 'Business & Finance', 'Economics', 'Health & Wellness', 'History', 'Memoir', 'Nature & Environment', 'Parenting & Family', 'Philosophy', 'Politics', 'Psychology', 'Religion & Spirituality', 'Science', 'Self-Help', 'Sociology', 'Technology', 'True Crime'],
+  'chronicle.catGroup.audience': ['Adult', 'Children', 'Middle Grade', 'Young Adult'],
+  'chronicle.catGroup.other': ['Anthology', 'Art & Design', 'Cooking', 'Crafts & Hobbies', 'Music & Performing Arts', 'Photography', 'Sports & Outdoors', 'Travel', 'Other'],
 }
 
 export const ALL_CATEGORIES = Object.values(CATEGORY_GROUPS).flat()
@@ -283,12 +283,6 @@ function BookCard({ book, currentUser, onFavoriteToggle, onClick }: {
 
   return (
     <div className={styles.bookCard} onClick={onClick} style={{ position: 'relative' }}>
-      {/* Currently reading ribbon */}
-      {book.currently_reading?.length > 0 && (
-        <div className={styles.readingRibbon} title={book.currently_reading.join(', ')}>
-          <span className={styles.readingEye}>◎</span>
-        </div>
-      )}
 
       {/* Favorite toggle button */}
       <button
@@ -574,11 +568,8 @@ export default function ChroniclePage() {
           }}
         />
 
-      {/* Top Navigation Wrapper for Back Nav & Self Profile Nav */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <Link href="/" className={styles.backNav}>
-          {t('chronicle.backToHome')}
-        </Link>
+      {/* Top Navigation Wrapper for Self Profile Nav */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '1.5rem' }}>
         {session?.user?.name && (
           <Link 
             href={`/chronicle/user/${session.user.name}`} 

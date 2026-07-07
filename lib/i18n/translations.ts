@@ -6,6 +6,7 @@
 export const translations = {
   en: {
     common: {
+      home: 'Home',
       logout: 'Logout',
       close: 'Close',
       edit: 'Edit',
@@ -17,7 +18,7 @@ export const translations = {
       loading: 'Loading...',
       error: 'Error',
       success: 'Success',
-      backToHome: '← back to home',
+      backToHome: 'Back',
     },
 
     homepage: {
@@ -38,14 +39,14 @@ export const translations = {
 
     login: {
       invalidCredentials: 'Invalid credentials. Try again.',
-      signIn: 'Log in',
-      backToHome: '← back to home',
+      signIn: 'Log in'
     },
 
     admin: {
       title: 'ADMIN',
       subtitle: 'Management · Configuration · Data',
       users: 'Users',
+      manage: 'Users Management',
       activities: 'Activities',
       data: 'Data',
       username: 'Username',
@@ -76,7 +77,7 @@ export const translations = {
     },
 
     keeppushing: {
-      title: 'Sports, nutrition and wellbeing tracking',
+      title: 'Keep Pushing',
       day: 'Day',
       week: 'Week',
       stats: 'Stats',
@@ -260,9 +261,9 @@ export const translations = {
     },
 
     games: {
+      title: "Games",
       friday: 'It\'s Friday',
       macronCloning: 'Intensive Macron face cloning',
-      backToHome: '← back to home',
       gamesPortal: 'Games portal',
       chooseYourPoison: 'Choose your poison.',
       nextGame: 'Next game',
@@ -284,7 +285,6 @@ export const translations = {
       re: 're:',
       readingLabel: '• Oracle Reading #{n} •',
       nextReading: 'Next Reading →',
-      backToHome: '← back to home',
       thinking1: 'Consulting 7.5 million years of wisdom',
       thinking2: 'Coffee break',
       thinking3: 'Evaluating Mercury\'s retrogradicity',
@@ -300,7 +300,6 @@ export const translations = {
 
     chronicle: {
       title: 'The Chronicle',
-      backToHome: '← back to home',
       description: 'Traces of our readings, carved in darkness.',
       search: 'Search a tome...',
       registerBook: '✍️ Register a book',
@@ -364,6 +363,26 @@ export const translations = {
       categoryHorror: 'Horror',
       categoryGraphicNovel: 'Graphic Novel',
       categoryOther: 'Other',
+      categoryActionAdventure: 'Action & Adventure',
+      categoryContemporary: 'Contemporary',
+      categoryCrime: 'Crime',
+      categoryMagicalRealism: 'Magical Realism',
+      categoryWestern: 'Western',
+      categoryClassics: 'Classics',
+      categoryHumor: 'Humor',
+      categorySatire: 'Satire',
+      categoryBusinessFinance: 'Business & Finance',
+      categoryTrueCrime: 'True Crime',
+      categoryReligionSpirituality: 'Religion & Spirituality',
+      categoryHealthWellness: 'Health & Wellness',
+      categoryTechnology: 'Technology',
+      categoryParentingFamily: 'Parenting & Family',
+      categoryNatureEnvironment: 'Nature & Environment',
+      categoryAdult: 'Adult',
+      categoryCraftsHobbies: 'Crafts & Hobbies',
+      categorySportsOutdoors: 'Sports & Outdoors',
+      categoryMusicPerformingArts: 'Music & Performing Arts',
+      categoryPhotography: 'Photography',
 
       // Book detail & Traces
       bookTitle: "Title",
@@ -408,6 +427,7 @@ export const translations = {
       currentlyReadingActive: 'Currently reading',
       markAsReading: 'Mark as reading',
       deleteTrace: 'Delete trace',
+      revertToOriginal: 'Revert to original',
 
       dimension: {
         readability: "Readability",
@@ -454,7 +474,7 @@ export const translations = {
     },
 
     ionickel: {
-      title: 'Car maintenance',
+      title: 'Ionickel',
       dashboard: 'Dashboard',
       serviceLog: 'Service log',
       backHome: '← Back',
@@ -485,10 +505,29 @@ export const translations = {
       notFound: 'Not found',
       serverError: 'Server error',
     },
+
+    profile: {
+      title: 'Profile',
+      privacy: 'Private Profile',
+      account: 'Account',
+      username: 'Username',
+      email: 'Email',
+      joined: 'Joined',
+      sections: 'Sections',
+      noSections: 'No sections assigned',
+      personal: 'Personal',
+      bio: 'Bio',
+      noBio: 'No bio yet',
+      editBio: 'Edit bio',
+      uploadAvatar: 'Upload Avatar',
+      selectAvatar: 'Select avatar image',
+      navigation: 'Navigation',
+    },
   },
 
   fr: {
     common: {
+      home: 'Accueil',
       logout: 'Déconnexion',
       close: 'Fermer',
       edit: 'Éditer',
@@ -500,7 +539,7 @@ export const translations = {
       loading: 'Chargement...',
       error: 'Erreur',
       success: 'Succès',
-      backToHome: '← retour à l\'accueil',
+      backToHome: 'Retour',
     },
 
     homepage: {
@@ -521,14 +560,14 @@ export const translations = {
 
     login: {
       invalidCredentials: 'Identifiants invalides. Réessaie.',
-      signIn: 'Se connecter',
-      backToHome: '← retour à l\'accueil',
+      signIn: 'Se connecter'
     },
 
     admin: {
       title: 'ADMIN',
       subtitle: 'Gestion · Configuration · Données',
       users: 'Utilisateurs',
+      manage: 'Gestions des Utilisateurs',
       activities: 'Activités',
       data: 'Données',
       username: 'Nom d\'utilisateur',
@@ -559,7 +598,7 @@ export const translations = {
     },
 
     keeppushing: {
-      title: 'Suivi sport, nutrition et bien-être',
+      title: 'KeepPushing',
       description: "",
       day: 'Jour',
       week: 'Semaine',
@@ -734,21 +773,19 @@ export const translations = {
     },
 
     games: {
+      title: "Jeux",
       friday: 'C\'est vendredi',
       macronCloning: 'Clonage intensif de minois macroniens',
-      backToHome: '← retour à l\'accueil',
       gamesPortal: 'Portail des jeux',
       chooseYourPoison: 'Choisis ton poison.',
       nextGame: 'Prochain jeu',
       inDevelopment: 'En cours de développement...',
-
       fridayTitle: 'VENDREDI',
       clickMacron: 'Clique sur Macron. C\'est tout.',
       yourName: 'Ton nom, combattant',
       namePlaceholder: 'Jean-Michel…',
       start: 'Commencer →',
       getReady: 'Prépare-toi…',
-      backToGames: '← retour aux jeux',
     },
 
     oracle: {
@@ -772,7 +809,6 @@ export const translations = {
 
     chronicle: {
       title:"La Chronique",
-      backToHome: '← retour à l\'accueil',
       description: 'Les traces de nos lectures, gravées dans l\'obscurité.',
       search: 'Chercher un tome...',
       registerBook: '✍️ Inscrire un livre',
@@ -836,10 +872,29 @@ export const translations = {
       categoryHorror: 'Horreur',
       categoryGraphicNovel: 'Roman Graphique',
       categoryOther: 'Autre',
+      categoryActionAdventure: 'Action & Aventure',
+      categoryContemporary: 'Contemporain',
+      categoryCrime: 'Crime',
+      categoryMagicalRealism: 'Réalisme Magique',
+      categoryWestern: 'Occident',
+      categoryClassics: 'Classiques',
+      categoryHumor: 'Humour',
+      categorySatire: 'Satire',
+      categoryBusinessFinance: 'Affaires & Finance',
+      categoryTrueCrime: 'Crime Vrai',
+      categoryReligionSpirituality: 'Religion & Spiritualité',
+      categoryHealthWellness: 'Santé & Bien-être',
+      categoryTechnology: 'Technologie',
+      categoryParentingFamily: 'Parentalité & Famille',
+      categoryNatureEnvironment: 'Nature & Environnement',
+      categoryAdult: 'Adulte',
+      categoryCraftsHobbies: 'Arts & Crafts',
+      categorySportsOutdoors: 'Sports & Extérieur',
+      categoryMusicPerformingArts: 'Musique & Arts du Spectacle',
+      categoryPhotography: 'Photographie',
 
       // Book detail & Traces
       bookTitle: "Titre",
-      backToChronicle: '← retour à la chronique',
       editBook: '✎ Éditer',
       deleteBook: '✕ Supprimer',
       readOn: 'Lu le {date}',
@@ -880,6 +935,7 @@ export const translations = {
       currentlyReadingActive: 'En cours de lecture',
       markAsReading: 'Marquer en cours de lecture',
       deleteTrace: 'Supprimer la trace',
+      revertToOriginal: 'Revenir à l\'original',
 
       dimension: {
         readability: "Lisibilité",
@@ -926,10 +982,9 @@ export const translations = {
     },
 
     ionickel: {
-      title: 'Entretien automobile',
+      title: 'Ionickel',
       dashboard: 'Tableau de bord',
       serviceLog: 'Journal d\'entretien',
-      backHome: '← Retour',
       overdue: 'En retard',
       dueSoon: 'À venir bientôt',
       ok: 'OK',
@@ -940,7 +995,6 @@ export const translations = {
       title: 'Le Bibliothécaire',
       subtitle: '✦ Consulter le Bibliothécaire ✦',
       description: 'Ton guide du grimoire collectif.',
-      backToChronicle: '← retour à la chronique',
       placeholder: 'Interroge le Bibliothécaire…',
       send: 'Envoyer',
       emptyHint: 'Pose-moi des questions sur le club de lecture — recommandations, notes, ou quoi lire ensuite.',
@@ -956,6 +1010,24 @@ export const translations = {
       unauthorized: 'Non autorisé',
       notFound: 'Non trouvé',
       serverError: 'Erreur serveur',
+    },
+
+    profile: {
+      title: 'Profil',
+      privacy: 'Profil Privé',
+      account: 'Compte',
+      username: 'Nom d\'utilisateur',
+      email: 'Email',
+      joined: 'Rejoint',
+      sections: 'Sections',
+      noSections: 'Aucune section',
+      personal: 'Personnel',
+      bio: 'Biographie',
+      noBio: 'Pas de biographie',
+      editBio: 'Modifier',
+      uploadAvatar: 'Télécharger l\'avatar',
+      selectAvatar: 'Sélectionner une image',
+      navigation: 'Navigation',
     },
   },
 } as const;

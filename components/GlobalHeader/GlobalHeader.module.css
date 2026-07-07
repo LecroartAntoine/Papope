@@ -1,0 +1,481 @@
+.globalHeader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  z-index: 1000;
+  background: rgba(20, 20, 20, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.globalHeader.visible {
+  transform: translateY(0);
+}
+
+.globalHeader.hidden {
+  transform: translateY(-100%);
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  padding: 0 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 1rem;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  overflow: hidden;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: rgba(240, 237, 230, 0.85);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  padding: 0.25rem 0.75rem 0.25rem 0;
+  border-radius: 4px;
+}
+
+.backBtn:hover {
+  color: #C8F135;
+  background: rgba(200, 241, 53, 0.08);
+}
+
+.backIcon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.appsNav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  overflow: hidden;
+  flex: 1;
+  justify-content: center;
+}
+
+.appLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: rgba(240, 237, 230, 0.6);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.appLink:hover {
+  color: rgba(240, 237, 230, 0.9);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.appLink.active {
+  color: #C8F135;
+  background: rgba(200, 241, 53, 0.08);
+}
+
+.appEmoji {
+  font-size: 1rem;
+}
+
+.appLabel {
+  opacity: 0.8;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.langSelector {
+  margin-right: 0.5rem;
+}
+
+.profileBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: rgba(240, 237, 230, 0.85);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.profileBtn:hover {
+  color: #C8F135;
+  background: rgba(200, 241, 53, 0.08);
+  border-color: rgba(200, 241, 53, 0.3);
+}
+
+.profileAvatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.profilePlaceholder {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(109, 40, 217, 0.3);
+  border: 1px solid rgba(109, 40, 217, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: rgba(240, 237, 230, 0.85);
+}
+
+.profileName {
+  opacity: 0.9;
+}
+
+.chevron {
+  font-size: 0.6rem;
+  opacity: 0.6;
+  margin-left: 0.25rem;
+}
+
+.loginBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: #C8F135;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.35rem 1rem;
+  border-radius: 4px;
+  background: rgba(200, 241, 53, 0.15);
+  border: 1px solid rgba(200, 241, 53, 0.3);
+  transition: all 0.2s;
+}
+
+.loginBtn:hover {
+  color: #141414;
+  background: #C8F135;
+  border-color: rgba(200, 241, 53, 0.5);
+}
+
+.userMenuWrapper {
+  position: relative;
+}
+
+.userMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: rgba(20, 20, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  padding: 0.5rem 0;
+  min-width: 160px;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.userMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: rgba(240, 237, 230, 0.85);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.userMenuItem:hover {
+  color: #C8F135;
+  background: rgba(200, 241, 53, 0.08);
+}
+
+.menuIcon {
+  font-size: 0.85rem;
+}
+
+.menuLabel {
+  opacity: 0.9;
+}
+
+.mobileMenuBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(240, 237, 230, 0.6);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.mobileMenuBtn:hover {
+  color: #C8F135;
+  background: rgba(200, 241, 53, 0.08);
+  border-color: rgba(200, 241, 53, 0.3);
+}
+
+.hamburgerIcon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.mobileDropdownOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.mobileDropdown {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  background: rgba(20, 20, 20, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 999;
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+  transform: translateY(0);
+}
+
+.mobileNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+}
+
+.mobileNavItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: rgba(240, 237, 230, 0.6);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.mobileNavItem:hover {
+  color: rgba(240, 237, 230, 0.9);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.mobileNavItem.active {
+  color: #C8F135;
+  background: rgba(200, 241, 53, 0.08);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+    gap: 0.5rem;
+  }
+
+  .backBtn {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem 0.2rem 0;
+  }
+
+  .backText {
+    display: none;
+  }
+
+  .appsNav {
+    gap: 0.1rem;
+    display: none;
+  }
+
+  .appLink {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6rem;
+  }
+
+  .appEmoji {
+    font-size: 0.9rem;
+  }
+
+  .profileBtn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+  }
+
+  .loginBtn {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.65rem;
+  }
+
+  .mobileDropdownOverlay {
+    display: block;
+  }
+
+  .mobileDropdown {
+    top: 56px;
+    left: 0;
+    right: 0;
+    background: rgba(20, 20, 20, 0.98);
+  }
+
+  .mobileNav {
+    padding: 0.75rem 1rem;
+    gap: 0.15rem;
+  }
+
+  .mobileNavItem {
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .profilePlaceholder,
+  .profileAvatar {
+    width: 16px;
+    height: 16px;
+  }
+
+  .profileName {
+    display: none;
+  }
+
+  .chevron {
+    display: none;
+  }
+
+  .userMenu {
+    right: -160px;
+    left: auto;
+    min-width: 160px;
+  }
+
+  .userMenuWrapper {
+    position: relative;
+  }
+
+  .profileBtn {
+    padding: 0.25rem;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+  }
+
+  .profileName,
+  .chevron {
+    display: none;
+  }
+
+  .userMenu {
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 140px;
+  }
+
+  .userMenuItem {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.7rem;
+    gap: 0.5rem;
+  }
+
+  .menuIcon {
+    font-size: 0.75rem;
+  }
+
+  .mobileMenuBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(240, 237, 230, 0.6);
+    cursor: pointer;
+  }
+
+  .mobileMenuBtn:hover {
+    color: #C8F135;
+    background: rgba(200, 241, 53, 0.08);
+    border-color: rgba(200, 241, 53, 0.3);
+  }
+}
+
+@media (max-width: 480px) {
+  .appsNav {
+    justify-content: flex-start;
+    gap: 0.1rem;
+  }
+
+  .appLink {
+    padding: 0.2rem 0.4rem;
+  }
+
+  .mobileNav {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .mobileNavItem {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}

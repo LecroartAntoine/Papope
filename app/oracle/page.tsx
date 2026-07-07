@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useI18n } from '@/lib/i18n/context'
-import Link from 'next/link'
 
 
 const STARS = Array.from({ length: 120 }, (_, i) => ({
@@ -525,9 +524,6 @@ export default function OraclePage() {
       `}</style>
 
       <div className="oracle-root">
-        <Link href="/" className="back-nav">
-          {t('oracle.backToHome')}
-        </Link>
         <Starfield />
         <div className={`glow-orb ${phase !== 'idle' ? 'active' : ''}`} />
 
