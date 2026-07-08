@@ -882,7 +882,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1.25rem;
-  background: linear-gradient(135deg, rgba(217, 119, 6, 0.75) 0%, rgba(109, 40, 217, 0.5) 100%);
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.8) 0%, rgba(109, 40, 217, 0.85) 100%);
   border: 1px solid rgba(223, 177, 91, 0.4);
   color: #E8DCBE;
   text-decoration: none;
@@ -898,7 +898,7 @@
 }
 
 .librarianFab:hover {
-  background: linear-gradient(135deg, rgba(217, 119, 6, 0.9) 0%, rgba(109, 40, 217, 0.65) 100%);
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.9) 0%, rgba(109, 40, 217, 0.95) 100%);
   border-color: #dfb15b;
   box-shadow: 0 8px 30px rgba(217, 119, 6, 0.45), 0 0 30px rgba(109, 40, 217, 0.25);
   transform: translateY(-2px);
@@ -1234,38 +1234,34 @@
 
 /* -- User Profile Nav -- */
 .userProfileNav {
-  position: absolute;
-  top: 1.5rem;
-  right: 2rem;
-  z-index: 100;
-  
-  display: inline-flex;
+  position: fixed;
+  bottom: 6rem;
+  right: 2.3rem;
+  z-index: 50;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  
-  font-family: 'Inconsolata', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(232, 220, 190, 0.85);
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  background: linear-gradient(135deg, rgba(109, 40, 217, 0.8), rgba(217, 119, 6, 0.85) 100% 0%);
+  border: 1px solid rgba(223, 177, 91, 0.4);
+  color: #E8DCBE;
   text-decoration: none;
-  
-  background: rgba(18, 18, 18, 0.4);
-  border: 1px dashed rgba(232, 220, 190, 0.25);
-  border-radius: 4px;
-  backdrop-filter: blur(6px);
-  
-  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 50px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(109, 40, 217, 0.15), 0 0 20px rgba(217, 119, 6, 0.3);
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .userProfileNav:hover {
-  border-style: solid;
-  border-color: rgba(217, 119, 6, 0.6);
-  color: #F59E0B;
-  background: rgba(217, 119, 6, 0.1);
+  background: linear-gradient(135deg,  rgba(109, 40, 217, 0.9) 0%,  rgba(217, 119, 6, 0.95) 100%);
+  border-color: #dfb15b;
+  box-shadow: 0 8px 30px rgba(217, 119, 6, 0.45), 0 0 30px rgba(109, 40, 217, 0.25);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 0 8px rgba(217, 119, 6, 0.05);
 }
 
 .userProfileAvatar {
@@ -1296,10 +1292,33 @@
   letter-spacing: 0;
 }
 
-/* Adjust position on smaller screens so it doesn't clip */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .userProfileNav {
-    top: 1.2rem;
-    right: 1.2rem;
+    bottom: 5.5rem;
+    right: 1.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  .userProfileNav {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .userProfileLabel {
+    display: none;
+  }
+
+  .userProfileAvatar {
+    display: none;
+  }
+
+  .userProfilePlaceholder {
+    display: none;
   }
 }

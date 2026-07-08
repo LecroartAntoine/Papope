@@ -6,7 +6,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useI18n } from '@/lib/i18n/context'
 import styles from './chronicle.module.css'
 import Link from 'next/link'
-import { BookOpen } from 'lucide-react'
+import { BookOpen, Church } from 'lucide-react'
 import Stars from '@/components/Chronicle/Stars'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -87,7 +87,7 @@ export function useUserAvatar(username: string | null | undefined) {
 
 export const CATEGORY_GROUPS: Record<string, string[]> = {
   'chronicle.catGroup.form': ['Comics', 'Essay', 'Graphic Novel', 'Illustrated', 'Manga', 'Novel', 'Novella', 'Play', 'Poetry', 'Short Story'],
-  'chronicle.catGroup.genre': ['Action & Adventure', 'Classics', 'Contemporary', 'Crime', 'Dystopia', 'Fantasy', 'Historical Fiction', 'Horror', 'Humor', 'Literary Fiction', 'Magical Realism', 'Mystery', 'Mythology', 'Romance', 'Satire', 'Sci-Fi', 'Thriller', 'Western'],
+  'chronicle.catGroup.genre': ['Action & Adventure', 'Classics', 'Contemporary', 'Crime', 'Drama', 'Dystopia', 'Fantasy', 'Historical Fiction', 'Horror', 'Humor', 'Literary Fiction', 'Magical Realism', 'Mystery', 'Mythology', 'Romance', 'Satire', 'Sci-Fi', 'Thriller', 'Western'],
   'chronicle.catGroup.knowledge': ['Biography', 'Business & Finance', 'Economics', 'Health & Wellness', 'History', 'Memoir', 'Nature & Environment', 'Parenting & Family', 'Philosophy', 'Politics', 'Psychology', 'Religion & Spirituality', 'Science', 'Self-Help', 'Sociology', 'Technology', 'True Crime'],
   'chronicle.catGroup.audience': ['Adult', 'Children', 'Middle Grade', 'Young Adult'],
   'chronicle.catGroup.other': ['Anthology', 'Art & Design', 'Cooking', 'Crafts & Hobbies', 'Music & Performing Arts', 'Photography', 'Sports & Outdoors', 'Travel', 'Other'],
@@ -567,26 +567,6 @@ export default function ChroniclePage() {
             backgroundImage: 'url(/images/moon.png)',
           }}
         />
-
-      {/* Top Navigation Wrapper for Self Profile Nav */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '1.5rem' }}>
-        {session?.user?.name && (
-          <Link 
-            href={`/chronicle/user/${session.user.name}`} 
-            className={styles.userProfileNav}
-          >
-            {currentUserAvatar ? (
-              <img src={currentUserAvatar} alt={session.user.name} className={styles.userProfileAvatar} />
-            ) : (
-              <div className={styles.userProfilePlaceholder}>
-                {session.user.name.slice(0, 2).toUpperCase()}
-              </div>
-            )}
-            <span>{session.user.name}</span>
-          </Link>
-        )}
-      </div>
-
       {/* Header */}
       <div className={styles.chronicleHeader}>
         <h1 className={styles.chronicleWordmark}>{t('chronicle.title')}</h1>
@@ -663,6 +643,26 @@ export default function ChroniclePage() {
         <BookOpen size={20} />
         <span className={styles.fabLabel}>{t('librarian.title')}</span>
       </Link>
+
+      {/* Top Navigation Wrapper for Self Profile Nav */}
+
+      {session?.user?.name && (
+        <Link 
+          href={`/chronicle/user/${session.user.name}`} 
+          className={styles.userProfileNav}
+        >
+          <Church size={20} />
+          <span className={styles.userProfileLabel}>Sanctum</span>
+          {currentUserAvatar ? (
+            <img src={currentUserAvatar} alt={session.user.name} className={styles.userProfileAvatar} />
+          ) : (
+            <div className={styles.userProfilePlaceholder}>
+              {session.user.name.slice(0, 2).toUpperCase()}
+            </div>
+          )}
+        </Link>
+      )}
+
     </div>
   )
 }

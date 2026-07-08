@@ -1,6 +1,6 @@
 .chronicleWrapper {
   position: relative;
-  min-height: 100vh;
+  min-height: calc(100vh - 56px);
   width: 100%;
   overflow-x: hidden;
   background-color: #0c0813; /* Set to your theme background */
