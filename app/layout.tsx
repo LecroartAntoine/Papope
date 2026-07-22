@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { Providers } from './providers'
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: 'Papope',
@@ -15,6 +17,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="./favicon.ico" sizes="any" />
       </head>
       <body>
+        <Analytics/>
+        <SpeedInsights/>
         <Providers>{children}</Providers>
       </body>
     </html>
