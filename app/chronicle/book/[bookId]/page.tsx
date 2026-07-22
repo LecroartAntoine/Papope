@@ -58,7 +58,11 @@ type BookDetail = {
   title: string
   author: string
   image_url: string | null
-  categories: string[]
+  form: string | null
+  genre: string[]
+  audience: string[]
+  knowledge: string[]
+  other: string[]
   added_by: string
   added_at: string
   reviews: Trace[]
@@ -849,17 +853,32 @@ function TraceCard({ trace, t, currentUser, onEdit, onDelete, onUpdate }: {
 
 // ─── EditBookPanel ────────────────────────────────────────────────────────────
 
-import { CATEGORY_GROUPS, ALL_CATEGORIES } from '@/app/chronicle/page'
+import { CATEGORY_GROUPS, translateCategory, type MultiCategoryGroup } from '@/app/chronicle/page'
 
 function EditBookPanel({ book, onClose, onSaved, t }: { book: BookDetail; onClose: () => void; onSaved: () => void; t: (k: string) => string }) {
-   const [form, setForm] = useState({ title: book.title, author: book.author, image_url: book.image_url || '', categories: book.categories })
+   const [form, setForm] = useState({
+     title: book.title,
+     author: book.author,
+     image_url: book.image_url || '',
+     form: book.form || '',
+     genre: book.genre,
+     audience: book.audience,
+     knowledge: book.knowledge,
+     other: book.other,
+   })
    const [loading, setLoading] = useState(false)
    const [uploading, setUploading] = useState(false)
    const [error, setError] = useState('')
    const [coverPreview, setCoverPreview] = useState<string | null>(book.image_url || null)
 
-   const toggleCat = (c: string) =>
-     setForm(f => ({ ...f, categories: f.categories.includes(c) ? f.categories.filter(x => x !== c) : [...f.categories, c] }))
+   const selectForm = (value: string) =>
+     setForm(f => ({ ...f, form: f.form === value ? '' : value }))
+
+   const toggleMulti = (group: MultiCategoryGroup, value: string) =>
+     setForm(f => ({
+       ...f,
+       [group]: f[group].includes(value) ? f[group].filter(x => x !== value) : [...f[group], value],
+     }))
 
    const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
      const file = e.target.files?.[0]
@@ -879,6 +898,7 @@ function EditBookPanel({ book, onClose, onSaved, t }: { book: BookDetail; onClos
 
   const submit = async () => {
     if (!form.title.trim() || !form.author.trim()) { setError(t('chronicle.titleAuthorRequired')); return }
+    if (!form.form) { setError(t('chronicle.formRequired')); return }
     setLoading(true); setError('')
     try {
       const res = await fetch(`/api/chronicle/books/${book.id}`, {
@@ -920,21 +940,35 @@ function EditBookPanel({ book, onClose, onSaved, t }: { book: BookDetail; onClos
          </div>
        </div>
       <div>
+        <label className={styles.fieldLabel}>{t(CATEGORY_GROUPS.form.labelKey)}</label>
+        <div className={styles.catCheckboxGrid}>
+          {CATEGORY_GROUPS.form.options.map(opt => (
+            <label key={opt.value} className={`${styles.catCheckbox} ${form.form === opt.value ? styles.checked : ''}`}>
+              <input type="radio" name="book-form-edit" checked={form.form === opt.value} onChange={() => selectForm(opt.value)} style={{ display: 'none' }} />
+              {t(opt.labelKey)}
+            </label>
+          ))}
+        </div>
+      </div>
+      <div>
         <label className={styles.fieldLabel}>{t('chronicle.categories')}</label>
         <div className={styles.catGroupGrid}>
-          {Object.entries(CATEGORY_GROUPS).map(([groupKey, cats]) => (
-            <div key={groupKey} className={styles.catGroup}>
-              <div className={styles.catGroupLabel}>{t(groupKey)}</div>
-              <div className={styles.catCheckboxGrid}>
-                {cats.map(cat => (
-                  <label key={cat} className={`${styles.catCheckbox} ${form.categories.includes(cat) ? styles.checked : ''}`}>
-                    <input type="checkbox" checked={form.categories.includes(cat)} onChange={() => toggleCat(cat)} style={{ display: 'none' }} />
-                    {cat}
-                  </label>
-                ))}
+          {(['genre', 'knowledge', 'audience', 'other'] as MultiCategoryGroup[]).map(groupKey => {
+            const group = CATEGORY_GROUPS[groupKey]
+            return (
+              <div key={groupKey} className={styles.catGroup}>
+                <div className={styles.catGroupLabel}>{t(group.labelKey)}</div>
+                <div className={styles.catCheckboxGrid}>
+                  {group.options.map(opt => (
+                    <label key={opt.value} className={`${styles.catCheckbox} ${form[groupKey].includes(opt.value) ? styles.checked : ''}`}>
+                      <input type="checkbox" checked={form[groupKey].includes(opt.value)} onChange={() => toggleMulti(groupKey, opt.value)} style={{ display: 'none' }} />
+                      {t(opt.labelKey)}
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
       {error && <p className={styles.formError}>{error}</p>}
@@ -1056,7 +1090,12 @@ export default function BookPage() {
             </div>
 
             <div className={styles.infoCol}>
-              <div className={styles.bookCategoryBadge}>✦ {book.categories.join(' · ')} ✦</div>
+              <div className={styles.bookCategoryBadge}>✦ {translateCategory(t, book.form)} ✦</div>
+              {[...book.genre, ...book.knowledge, ...book.audience, ...book.other].length > 0 && (
+                <div style={{ fontSize: '0.75rem', letterSpacing: '0.05em', opacity: 0.65, marginTop: '-0.3rem', marginBottom: '0.5rem' }}>
+                  {[...book.genre, ...book.knowledge, ...book.audience, ...book.other].map(v => translateCategory(t, v)).join(' · ')}
+                </div>
+              )}
               <div className={styles.bookTitleRow}>
                 <h1 className={styles.bookHeroTitle}>{book.title}</h1>
                 <button className={styles.editBookBtn} onClick={() => setShowEditBook(v => !v)}>✎ {t('chronicle.amendVolume')}</button>

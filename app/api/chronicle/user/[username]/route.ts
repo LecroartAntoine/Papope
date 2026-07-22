@@ -42,7 +42,6 @@ export async function GET(
         b.title AS book_title,
         b.author AS book_author,
         b.image_url AS book_image_url,
-        COALESCE(b.categories, ARRAY[b.category]) AS book_categories,
         r.date_read,
         r.rating,
         r.recommendation,
@@ -56,8 +55,7 @@ export async function GET(
  
     // Fetch their favorites
     const { rows: favRows } = await sql`
-      SELECT b.id, b.title, b.author, b.image_url,
-             COALESCE(b.categories, ARRAY[b.category]) AS categories
+      SELECT b.id, b.title, b.author, b.image_url
       FROM chronicle_favorites f
       JOIN chronicle_books b ON b.id = f.book_id
       WHERE f.user_name = ${decodedName}

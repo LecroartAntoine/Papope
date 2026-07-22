@@ -16,7 +16,11 @@ export async function GET() {
          b.title,
          b.author,
          b.image_url,
-         COALESCE(b.categories, ARRAY[b.category]) AS categories,
+         b.form,
+         COALESCE(b.genre, ARRAY[]::text[]) AS genre,
+         COALESCE(b.audience, ARRAY[]::text[]) AS audience,
+         COALESCE(b.knowledge, ARRAY[]::text[]) AS knowledge,
+         COALESCE(b.other, ARRAY[]::text[]) AS other,
          b.added_by,
          b.added_at,
          COUNT(DISTINCT r.id)::int AS review_count,
@@ -48,28 +52,42 @@ export async function GET() {
 
 // ─── POST /api/chronicle/books ────────────────────────────────────────────────
 
+function cleanArray(input: unknown): string[] {
+  if (!Array.isArray(input)) return []
+  return input.filter((c): c is string => typeof c === 'string' && c.trim().length > 0).map(c => c.trim())
+}
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const { title, author, image_url, categories, added_by } = await req.json()
+    const { title, author, image_url, form, genre, audience, knowledge, other, added_by } = await req.json()
 
     if (!title?.trim() || !author?.trim() || !added_by?.trim()) {
       return NextResponse.json({ error: 'title, author, and added_by are required' }, { status: 400 })
     }
 
-    const catArray = Array.isArray(categories) && categories.length > 0 
-      ? categories.filter((c: string) => c?.trim()).map((c: string) => c.trim())
-      : ['Other']
+    if (!form?.trim()) {
+      return NextResponse.json({ error: 'form is required' }, { status: 400 })
+    }
+
+    const genreArray = cleanArray(genre)
+    const audienceArray = cleanArray(audience)
+    const knowledgeArray = cleanArray(knowledge)
+    const otherArray = cleanArray(other)
 
     const { rows } = await sql`
-      INSERT INTO chronicle_books (title, author, image_url, categories, added_by)
+      INSERT INTO chronicle_books (title, author, image_url, form, genre, audience, knowledge, other, added_by)
       VALUES (
         ${title.trim()},
         ${author.trim()},
         ${image_url?.trim() || null},
-        ${catArray  as any},
+        ${form.trim()},
+        ${genreArray as any},
+        ${audienceArray as any},
+        ${knowledgeArray as any},
+        ${otherArray as any},
         ${added_by.trim()}
       )
       RETURNING id

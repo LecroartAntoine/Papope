@@ -931,6 +931,98 @@
   }
 }
 
+
+/* -- User Profile Nav -- */
+.userProfileNav {
+  position: fixed;
+  bottom: 6rem;
+  right: 2rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  background: linear-gradient(135deg, rgba(109, 40, 217, 0.8), rgba(217, 119, 6, 0.85) 100% 0%);
+  border: 1px solid rgba(223, 177, 91, 0.4);
+  color: #E8DCBE;
+  text-decoration: none;
+  border-radius: 50px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(109, 40, 217, 0.15), 0 0 20px rgba(217, 119, 6, 0.3);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.userProfileNav:hover {
+  background: linear-gradient(135deg,  rgba(109, 40, 217, 0.9) 0%,  rgba(217, 119, 6, 0.95) 100%);
+  border-color: #dfb15b;
+  box-shadow: 0 8px 30px rgba(217, 119, 6, 0.45), 0 0 30px rgba(109, 40, 217, 0.25);
+  transform: translateY(-2px);
+}
+
+.userProfileAvatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(232, 220, 190, 0.3);
+  transition: border-color 0.2s;
+}
+
+.userProfileNav:hover .userProfileAvatar {
+  border-color: #F59E0B;
+}
+
+.userProfilePlaceholder {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(109, 40, 217, 0.3);
+  border: 1px solid rgba(109, 40, 217, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-weight: bold;
+  color: #E8DCBE;
+  letter-spacing: 0;
+}
+
+@media (max-width: 768px) {
+  .userProfileNav {
+    bottom: 5.5rem;
+    right: 1.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  .userProfileNav {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .userProfileLabel {
+    display: none;
+  }
+
+  .userProfileAvatar {
+    display: none;
+  }
+
+  .userProfilePlaceholder {
+    display: none;
+  }
+}
+
 @media (max-width: 600px) {
   .booksGrid { grid-template-columns: repeat(2, 1fr); padding: 0.5rem 1.2rem 2rem; gap: 16px 14px; }
   .catFilter { padding-left: 1.2rem; padding-right: 1.2rem; }
@@ -946,6 +1038,11 @@
 
   .librarianFab {
     bottom: 1rem;
+    right: 1rem;
+  }
+
+  .userProfileNav {
+    bottom: 5rem;
     right: 1rem;
   }
 }
@@ -1231,94 +1328,3 @@
 .modalSubmit:not(:disabled):hover { opacity: 0.85; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-/* -- User Profile Nav -- */
-.userProfileNav {
-  position: fixed;
-  bottom: 6rem;
-  right: 2.3rem;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.875rem 1.25rem;
-  background: linear-gradient(135deg, rgba(109, 40, 217, 0.8), rgba(217, 119, 6, 0.85) 100% 0%);
-  border: 1px solid rgba(223, 177, 91, 0.4);
-  color: #E8DCBE;
-  text-decoration: none;
-  border-radius: 50px;
-  font-family: 'Cinzel', serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(109, 40, 217, 0.15), 0 0 20px rgba(217, 119, 6, 0.3);
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.userProfileNav:hover {
-  background: linear-gradient(135deg,  rgba(109, 40, 217, 0.9) 0%,  rgba(217, 119, 6, 0.95) 100%);
-  border-color: #dfb15b;
-  box-shadow: 0 8px 30px rgba(217, 119, 6, 0.45), 0 0 30px rgba(109, 40, 217, 0.25);
-  transform: translateY(-2px);
-}
-
-.userProfileAvatar {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid rgba(232, 220, 190, 0.3);
-  transition: border-color 0.2s;
-}
-
-.userProfileNav:hover .userProfileAvatar {
-  border-color: #F59E0B;
-}
-
-.userProfilePlaceholder {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(109, 40, 217, 0.3);
-  border: 1px solid rgba(109, 40, 217, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.55rem;
-  font-weight: bold;
-  color: #E8DCBE;
-  letter-spacing: 0;
-}
-
-@media (max-width: 768px) {
-  .userProfileNav {
-    bottom: 5.5rem;
-    right: 1.5rem;
-    padding: 0.75rem 1rem;
-    font-size: 0.75rem;
-  }
-
-  .userProfileNav {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-  }
-
-  .userProfileLabel {
-    display: none;
-  }
-
-  .userProfileAvatar {
-    display: none;
-  }
-
-  .userProfilePlaceholder {
-    display: none;
-  }
-}

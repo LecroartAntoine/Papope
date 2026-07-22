@@ -16,7 +16,11 @@ type Book = {
   title: string
   author: string
   image_url: string | null
-  categories: string[]
+  form: string | null
+  genre: string[]
+  audience: string[]
+  knowledge: string[]
+  other: string[]
   added_by: string
   added_at: string
   review_count: number
@@ -27,6 +31,9 @@ type Book = {
   favorite_count: number
   is_favorited_by_me: boolean
 }
+
+// Groups whose values live in an array column on the book (everything except "form").
+export type MultiCategoryGroup = 'genre' | 'audience' | 'knowledge' | 'other'
 
 // ─── Global Avatar Cache & Hook ─────────────────────────────────────────────
 
@@ -84,17 +91,121 @@ export function useUserAvatar(username: string | null | undefined) {
 }
 
 // ─── Categories ──────────────────────────────────────────────────────────────
+//
+// Each group key doubles as the DB column name for form/genre/audience/knowledge/other
+// (except "form", whose column stores a single string instead of an array).
+// Every option carries the raw value stored in the DB plus a translation key
+// for its display label, so the UI can be localized without touching the data.
 
-export const CATEGORY_GROUPS: Record<string, string[]> = {
-  'chronicle.catGroup.form': ['Comics', 'Essay', 'Graphic Novel', 'Illustrated', 'Manga', 'Novel', 'Novella', 'Play', 'Poetry', 'Short Story'],
-  'chronicle.catGroup.genre': ['Action & Adventure', 'Classics', 'Contemporary', 'Crime', 'Drama', 'Dystopia', 'Fantasy', 'Historical Fiction', 'Horror', 'Humor', 'Literary Fiction', 'Magical Realism', 'Mystery', 'Mythology', 'Romance', 'Satire', 'Sci-Fi', 'Thriller', 'Western'],
-  'chronicle.catGroup.knowledge': ['Biography', 'Business & Finance', 'Economics', 'Health & Wellness', 'History', 'Memoir', 'Nature & Environment', 'Parenting & Family', 'Philosophy', 'Politics', 'Psychology', 'Religion & Spirituality', 'Science', 'Self-Help', 'Sociology', 'Technology', 'True Crime'],
-  'chronicle.catGroup.audience': ['Adult', 'Children', 'Middle Grade', 'Young Adult'],
-  'chronicle.catGroup.other': ['Anthology', 'Art & Design', 'Cooking', 'Crafts & Hobbies', 'Music & Performing Arts', 'Photography', 'Sports & Outdoors', 'Travel', 'Other'],
+type CategoryOption = { value: string; labelKey: string }
+type CategoryGroup = { labelKey: string; multi: boolean; options: CategoryOption[] }
+
+export const CATEGORY_GROUPS: Record<'form' | MultiCategoryGroup, CategoryGroup> = {
+  form: {
+    labelKey: 'chronicle.catGroup.form',
+    multi: false,
+    options: [
+      { value: 'Comics', labelKey: 'chronicle.category.comics' },
+      { value: 'Manga', labelKey: 'chronicle.category.manga' },
+      { value: 'Novel', labelKey: 'chronicle.category.novel' },
+      { value: 'Play', labelKey: 'chronicle.category.play' },
+      { value: 'Poetry', labelKey: 'chronicle.category.poetry' },
+      { value: 'Short Story', labelKey: 'chronicle.category.shortStory' },
+    ],
+  },
+  genre: {
+    labelKey: 'chronicle.catGroup.genre',
+    multi: true,
+    options: [
+      { value: 'Action', labelKey: 'chronicle.category.action' },
+      { value: 'Adventure', labelKey: 'chronicle.category.adventure' },
+      { value: 'Classics', labelKey: 'chronicle.category.classics' },
+      { value: 'Crime', labelKey: 'chronicle.category.crime' },
+      { value: 'Drama', labelKey: 'chronicle.category.drama' },
+      { value: 'Dystopia', labelKey: 'chronicle.category.dystopia' },
+      { value: 'Fantasy', labelKey: 'chronicle.category.fantasy' },
+      { value: 'Fiction', labelKey: 'chronicle.category.fiction' },
+      { value: 'Horror', labelKey: 'chronicle.category.horror' },
+      { value: 'Humor', labelKey: 'chronicle.category.humor' },
+      { value: 'Mystery', labelKey: 'chronicle.category.mystery' },
+      { value: 'Mythology', labelKey: 'chronicle.category.mythology' },
+      { value: 'Romance', labelKey: 'chronicle.category.romance' },
+      { value: 'Satire', labelKey: 'chronicle.category.satire' },
+      { value: 'Sci-Fi', labelKey: 'chronicle.category.sciFi' },
+      { value: 'Thriller', labelKey: 'chronicle.category.thriller' },
+      { value: 'Western', labelKey: 'chronicle.category.western' },
+    ],
+  },
+  knowledge: {
+    labelKey: 'chronicle.catGroup.knowledge',
+    multi: true,
+    options: [
+      { value: 'Biography', labelKey: 'chronicle.category.biography' },
+      { value: 'Wellness', labelKey: 'chronicle.category.wellness' },
+      { value: 'History', labelKey: 'chronicle.category.history' },
+      { value: 'Nature & Environment', labelKey: 'chronicle.category.natureEnvironment' },
+      { value: 'Parenting & Family', labelKey: 'chronicle.category.parentingFamily' },
+      { value: 'Philosophy', labelKey: 'chronicle.category.philosophy' },
+      { value: 'Politics', labelKey: 'chronicle.category.politics' },
+      { value: 'Psychology', labelKey: 'chronicle.category.psychology' },
+      { value: 'Religion & Spirituality', labelKey: 'chronicle.category.religionSpirituality' },
+      { value: 'Science', labelKey: 'chronicle.category.science' },
+      { value: 'Sociology', labelKey: 'chronicle.category.sociology' },
+      { value: 'Technology', labelKey: 'chronicle.category.technology' },
+      { value: 'True Crime', labelKey: 'chronicle.category.trueCrime' },
+    ],
+  },
+  audience: {
+    labelKey: 'chronicle.catGroup.audience',
+    multi: true,
+    options: [
+      { value: 'Adult', labelKey: 'chronicle.category.adult' },
+      { value: 'Children', labelKey: 'chronicle.category.children' },
+      { value: 'Teenager', labelKey: 'chronicle.category.teenager' },
+      { value: 'Young Adult', labelKey: 'chronicle.category.youngAdult' },
+    ],
+  },
+  other: {
+    labelKey: 'chronicle.catGroup.other',
+    multi: true,
+    options: [
+      { value: 'Art & Design', labelKey: 'chronicle.category.artDesign' },
+      { value: 'Cooking', labelKey: 'chronicle.category.cooking' },
+      { value: 'Crafts & Hobbies', labelKey: 'chronicle.category.craftsHobbies' },
+      { value: 'Music & Performing Arts', labelKey: 'chronicle.category.musicPerformingArts' },
+      { value: 'Photography', labelKey: 'chronicle.category.photography' },
+      { value: 'Sports & Outdoors', labelKey: 'chronicle.category.sportsOutdoors' },
+      { value: 'Travel', labelKey: 'chronicle.category.travel' },
+      { value: 'Other', labelKey: 'chronicle.category.other' },
+    ],
+  },
 }
 
-export const ALL_CATEGORIES = Object.values(CATEGORY_GROUPS).flat()
+// value -> labelKey, for quickly translating a stored category value anywhere in the UI
+const CATEGORY_VALUE_TO_LABELKEY: Record<string, string> = Object.fromEntries(
+  Object.values(CATEGORY_GROUPS).flatMap(group => group.options.map(o => [o.value, o.labelKey]))
+)
 
+// value -> group key, used by the filter to know which book field to check
+const CATEGORY_VALUE_TO_GROUP: Record<string, keyof typeof CATEGORY_GROUPS> = Object.fromEntries(
+  Object.entries(CATEGORY_GROUPS).flatMap(([groupKey, group]) =>
+    group.options.map(o => [o.value, groupKey as keyof typeof CATEGORY_GROUPS])
+  )
+)
+
+export function translateCategory(t: (k: string) => string, value: string | null | undefined): string {
+  if (!value) return ''
+  const key = CATEGORY_VALUE_TO_LABELKEY[value]
+  return key ? t(key) : value
+}
+
+function bookMatchesCategory(book: Book, value: string): boolean {
+  if (value === 'All') return true
+  const group = CATEGORY_VALUE_TO_GROUP[value]
+  if (!group) return false
+  if (group === 'form') return book.form === value
+  return (book[group] as string[])?.includes(value) ?? false
+}
 
 // ─── User Badges Component ──────────────────────────────────────────────────
 
@@ -135,16 +246,37 @@ function UserBadges({ users, titlePrefix }: { users: string[]; titlePrefix: stri
 
 // ─── AddBookPanel ─────────────────────────────────────────────────────────────
 
+type AddBookForm = {
+  title: string
+  author: string
+  image_url: string
+  form: string
+  genre: string[]
+  audience: string[]
+  knowledge: string[]
+  other: string[]
+}
+
+const EMPTY_ADD_BOOK_FORM: AddBookForm = {
+  title: '', author: '', image_url: '', form: '', genre: [], audience: [], knowledge: [], other: [],
+}
+
 function AddBookPanel({ onAdded, t, username }: { onAdded: () => void; t: (k: string) => string; username: string }) {
    const [open, setOpen] = useState(false)
-   const [form, setForm] = useState({ title: '', author: '', image_url: '', categories: [] as string[] })
+   const [form, setForm] = useState<AddBookForm>(EMPTY_ADD_BOOK_FORM)
    const [loading, setLoading] = useState(false)
    const [uploading, setUploading] = useState(false)
    const [error, setError] = useState('')
    const [coverPreview, setCoverPreview] = useState<string | null>(null)
 
-   const toggleCat = (c: string) =>
-     setForm(f => ({ ...f, categories: f.categories.includes(c) ? f.categories.filter(x => x !== c) : [...f.categories, c] }))
+   const selectForm = (value: string) =>
+     setForm(f => ({ ...f, form: f.form === value ? '' : value }))
+
+   const toggleMulti = (group: MultiCategoryGroup, value: string) =>
+     setForm(f => ({
+       ...f,
+       [group]: f[group].includes(value) ? f[group].filter(x => x !== value) : [...f[group], value],
+     }))
 
    const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
      const file = e.target.files?.[0]
@@ -164,7 +296,7 @@ function AddBookPanel({ onAdded, t, username }: { onAdded: () => void; t: (k: st
 
    const submit = async () => {
      if (!form.title.trim() || !form.author.trim()) { setError(t('chronicle.titleAuthorRequired')); return }
-     if (form.categories.length === 0) { setError(t('chronicle.categoryRequired')); return }
+     if (!form.form) { setError(t('chronicle.formRequired')); return }
      setLoading(true); setError('')
      try {
        const res = await fetch('/api/chronicle/books', {
@@ -174,7 +306,7 @@ function AddBookPanel({ onAdded, t, username }: { onAdded: () => void; t: (k: st
        })
        if (!res.ok) throw new Error()
        setOpen(false)
-       setForm({ title: '', author: '', image_url: '', categories: [] })
+       setForm(EMPTY_ADD_BOOK_FORM)
        setCoverPreview(null)
        onAdded()
      } catch { setError(t('chronicle.spellFailed')) }
@@ -217,22 +349,39 @@ function AddBookPanel({ onAdded, t, username }: { onAdded: () => void; t: (k: st
            </div>
          </div>
 
+        {/* Form: single-select, required */}
+        <div>
+          <label className={styles.fieldLabel}>{t(CATEGORY_GROUPS.form.labelKey)}</label>
+          <div className={styles.catCheckboxGrid}>
+            {CATEGORY_GROUPS.form.options.map(opt => (
+              <label key={opt.value} className={`${styles.catCheckbox} ${form.form === opt.value ? styles.checked : ''}`}>
+                <input type="radio" name="book-form" checked={form.form === opt.value} onChange={() => selectForm(opt.value)} style={{ display: 'none' }} />
+                {t(opt.labelKey)}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Genre / Knowledge / Audience / Other: multi-select, optional */}
         <div>
           <label className={styles.fieldLabel}>{t('chronicle.categories')}</label>
           <div className={styles.catGroupGrid}>
-            {Object.entries(CATEGORY_GROUPS).map(([groupKey, cats]) => (
-              <div key={groupKey} className={styles.catGroup}>
-                <div className={styles.catGroupLabel}>{t(groupKey)}</div>
-                <div className={styles.catCheckboxGrid}>
-                  {cats.map(cat => (
-                    <label key={cat} className={`${styles.catCheckbox} ${form.categories.includes(cat) ? styles.checked : ''}`}>
-                      <input type="checkbox" checked={form.categories.includes(cat)} onChange={() => toggleCat(cat)} style={{ display: 'none' }} />
-                      {cat}
-                    </label>
-                  ))}
+            {(['genre', 'knowledge', 'audience', 'other'] as MultiCategoryGroup[]).map(groupKey => {
+              const group = CATEGORY_GROUPS[groupKey]
+              return (
+                <div key={groupKey} className={styles.catGroup}>
+                  <div className={styles.catGroupLabel}>{t(group.labelKey)}</div>
+                  <div className={styles.catCheckboxGrid}>
+                    {group.options.map(opt => (
+                      <label key={opt.value} className={`${styles.catCheckbox} ${form[groupKey].includes(opt.value) ? styles.checked : ''}`}>
+                        <input type="checkbox" checked={form[groupKey].includes(opt.value)} onChange={() => toggleMulti(groupKey, opt.value)} style={{ display: 'none' }} />
+                        {t(opt.labelKey)}
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -273,11 +422,11 @@ function ReadingChipAvatar({ username }: { username: string }) {
 
 // ─── BookCard ─────────────────────────────────────────────────────────────────
 
-function BookCard({ book, currentUser, onFavoriteToggle, onClick }: {
+function BookCard({ book, onFavoriteToggle, onClick, t }: {
   book: Book
-  currentUser: string | null | undefined
   onFavoriteToggle: (bookId: number) => void
   onClick: () => void
+  t: (k: string) => string
 }) {
   const [imgErr, setImgErr] = useState(false)
 
@@ -305,7 +454,7 @@ function BookCard({ book, currentUser, onFavoriteToggle, onClick }: {
           )
         }
         <div className={styles.bookOverlay}>
-          <span className={styles.bookCategory}>{book.categories[0]}</span>
+          <span className={styles.bookCategory}>{translateCategory(t, book.form)}</span>
         </div>
         <div className={styles.bookCoverShine} />
       </div>
@@ -317,12 +466,6 @@ function BookCard({ book, currentUser, onFavoriteToggle, onClick }: {
         <div style={{ marginTop: 4 }}>
           <Stars rating={book.avg_rating ? parseFloat(book.avg_rating) : null} quantity={book.review_count} withNum />
         </div>
-
-        {/* --- Favorites Indicator with Count --- */}
-        {/* <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'rgba(232, 220, 190, 0.7)' }}>
-          <span style={{ color: book.is_favorited_by_me ? '#ef4444' : 'rgba(232, 220, 190, 0.4)' }}>♥</span>
-          <span>{book.favorite_count} {book.favorite_count === 1 ? 'favorite' : 'favorites'}</span>
-        </div> */}
 
         {/* --- Traces Indicator with User Badges --- */}
         {book.readers?.length > 0 && (
@@ -356,9 +499,9 @@ function CategoryFilter({ active, onToggle, t }: { active: string; onToggle: (c:
   return (
     <div className={styles.catFilter}>
       <button className={`${styles.catPill} ${active === 'All' ? styles.active : ''}`} onClick={() => onToggle('All')}>{t('chronicle.allTomes')}</button>
-      {Object.entries(CATEGORY_GROUPS).map(([groupKey, cats]) => {
-        const groupLabel = t(groupKey)
-        const isGroupActive = cats.includes(active)
+      {Object.entries(CATEGORY_GROUPS).map(([groupKey, group]) => {
+        const groupLabel = t(group.labelKey)
+        const isGroupActive = group.options.some(o => o.value === active)
         const isExpanded = expandedGroup === groupKey
         return (
           <div key={groupKey} style={{ position: 'relative', display: 'inline-block' }}>
@@ -370,13 +513,13 @@ function CategoryFilter({ active, onToggle, t }: { active: string; onToggle: (c:
             </button>
             {isExpanded && (
               <div className={styles.catSubmenu}>
-                {cats.map(cat => (
+                {group.options.map(opt => (
                   <button
-                    key={cat}
-                    className={`${styles.catSubmenuItem} ${active === cat ? styles.active : ''}`}
-                    onClick={() => { onToggle(cat); setExpandedGroup(null) }}
+                    key={opt.value}
+                    className={`${styles.catSubmenuItem} ${active === opt.value ? styles.active : ''}`}
+                    onClick={() => { onToggle(opt.value); setExpandedGroup(null) }}
                   >
-                    {cat}
+                    {t(opt.labelKey)}
                   </button>
                 ))}
               </div>
@@ -527,7 +670,7 @@ export default function ChroniclePage() {
       is_favorited_by_me: favoriteIds.has(b.id)
     }))
 
-    if (activeCategory !== 'All') list = list.filter(b => b.categories.includes(activeCategory))
+    if (activeCategory !== 'All') list = list.filter(b => bookMatchesCategory(b, activeCategory))
     if (search.trim()) {
       const q = search.toLowerCase()
       list = list.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q))
@@ -631,9 +774,9 @@ export default function ChroniclePage() {
             <BookCard
               key={book.id}
               book={book}
-              currentUser={session?.user?.name}
               onFavoriteToggle={handleFavoriteToggle}
               onClick={() => router.push(`/chronicle/book/${book.id}`)}
+              t={t}
             />
           ))}
         </div>
@@ -652,7 +795,7 @@ export default function ChroniclePage() {
           className={styles.userProfileNav}
         >
           <Church size={20} />
-          <span className={styles.userProfileLabel}>Sanctum</span>
+          <span className={styles.userProfileLabel}>{t('chronicle.yourSanctum')}</span>
           {currentUserAvatar ? (
             <img src={currentUserAvatar} alt={session.user.name} className={styles.userProfileAvatar} />
           ) : (

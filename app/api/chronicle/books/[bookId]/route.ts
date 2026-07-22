@@ -24,7 +24,11 @@ export async function GET(
          b.title,
          b.author,
          b.image_url,
-         COALESCE(b.categories, ARRAY[b.category]) AS categories,
+         b.form,
+         COALESCE(b.genre, ARRAY[]::text[]) AS genre,
+         COALESCE(b.audience, ARRAY[]::text[]) AS audience,
+         COALESCE(b.knowledge, ARRAY[]::text[]) AS knowledge,
+         COALESCE(b.other, ARRAY[]::text[]) AS other,
          b.added_by,
          b.added_at,
          COUNT(DISTINCT r.id)::int AS review_count,
@@ -128,19 +132,29 @@ export async function PUT(
   if (isNaN(bookId)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
 
   try {
-    const { title, author, image_url, categories } = await req.json()
+    const { title, author, image_url, form, genre, audience, knowledge, other } = await req.json()
 
     if (!title?.trim() || !author?.trim()) {
       return NextResponse.json({ error: 'title and author are required' }, { status: 400 })
+    }
+
+    if (!form?.trim()) {
+      return NextResponse.json({ error: 'form is required' }, { status: 400 })
     }
 
     // Verify the book exists
     const { rows: existingBook } = await sql`SELECT id FROM chronicle_books WHERE id = ${bookId}`
     if (existingBook.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    const catArray = Array.isArray(categories) && categories.length > 0 
-      ? categories.filter((c: string) => c?.trim()).map((c: string) => c.trim())
-      : ['Other']
+    const cleanArray = (input: unknown): string[] =>
+      Array.isArray(input)
+        ? input.filter((c): c is string => typeof c === 'string' && c.trim().length > 0).map(c => c.trim())
+        : []
+
+    const genreArray = cleanArray(genre)
+    const audienceArray = cleanArray(audience)
+    const knowledgeArray = cleanArray(knowledge)
+    const otherArray = cleanArray(other)
 
     await sql`
       UPDATE chronicle_books
@@ -148,7 +162,11 @@ export async function PUT(
         title = ${title.trim()},
         author = ${author.trim()},
         image_url = ${image_url?.trim() || null},
-        categories = ${catArray as any}
+        form = ${form.trim()},
+        genre = ${genreArray as any},
+        audience = ${audienceArray as any},
+        knowledge = ${knowledgeArray as any},
+        other = ${otherArray as any}
       WHERE id = ${bookId}
     `
 
