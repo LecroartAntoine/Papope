@@ -108,6 +108,7 @@ export const CATEGORY_GROUPS: Record<'form' | MultiCategoryGroup, CategoryGroup>
       { value: 'Comics', labelKey: 'chronicle.category.comics' },
       { value: 'Manga', labelKey: 'chronicle.category.manga' },
       { value: 'Novel', labelKey: 'chronicle.category.novel' },
+      { value: 'Essay', labelKey: 'chronicle.category.essay' },
       { value: 'Play', labelKey: 'chronicle.category.play' },
       { value: 'Poetry', labelKey: 'chronicle.category.poetry' },
       { value: 'Short Story', labelKey: 'chronicle.category.shortStory' },
