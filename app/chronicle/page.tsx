@@ -535,8 +535,8 @@ function CategoryFilter({ active, onToggle, t }: { active: string; onToggle: (c:
 // ─── SortBy ──────────────────────────────────────────────────────────
 
 const SORT_OPTIONS = [
-  { value: 'lastTraced', labelKey: 'chronicle.sortLastTraced' },
   { value: 'added', labelKey: 'chronicle.sortAdded' },
+  { value: 'lastTraced', labelKey: 'chronicle.sortLastTraced' },
   { value: 'rating', labelKey: 'chronicle.sortRating' },
   { value: 'title', labelKey: 'chronicle.sortTitle' },
 ] as const
