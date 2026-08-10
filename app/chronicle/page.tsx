@@ -598,7 +598,7 @@ export default function ChroniclePage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('All')
-  const [sort, setSort] = useState<'lastTraced' | 'added' | 'rating' | 'title'>('lastTraced')
+  const [sort, setSort] = useState<'lastTraced' | 'added' | 'rating' | 'title'>('added')
 
   useEffect(() => { if (status === 'unauthenticated') router.push('/login') }, [status, router])
 
