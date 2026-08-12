@@ -3,7 +3,7 @@ import { sql } from '@vercel/postgres'
 export async function buildLibraryContext(): Promise<string> {
   try {
     const { rows: books } = await sql`
-      SELECT id, title, author, categories, added_by, added_at
+      SELECT id, title, author, genre, added_by, added_at
       FROM chronicle_books
       ORDER BY added_at DESC
     `
@@ -17,7 +17,7 @@ export async function buildLibraryContext(): Promise<string> {
       id: book.id,
       title: book.title,
       author: book.author,
-      categories: book.categories || [],
+      genres: book.genre || [],
       addedBy: book.added_by,
       reviews: reviews
         .filter((r) => r.book_id === book.id)
