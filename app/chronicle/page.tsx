@@ -112,6 +112,7 @@ export const CATEGORY_GROUPS: Record<'form' | MultiCategoryGroup, CategoryGroup>
       { value: 'Play', labelKey: 'chronicle.category.play' },
       { value: 'Poetry', labelKey: 'chronicle.category.poetry' },
       { value: 'Short Story', labelKey: 'chronicle.category.shortStory' },
+      { value: 'Other', labelKey: 'chronicle.category.other' },
     ],
   },
   genre: {

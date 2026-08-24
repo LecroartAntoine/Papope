@@ -357,6 +357,7 @@ export const translations = {
         play: 'Play',
         poetry: 'Poetry',
         shortStory: 'Short Story',
+        other: 'Other',
 
         action: 'Action',
         adventure: 'Adventure',
@@ -886,6 +887,7 @@ export const translations = {
       play: 'Pièce de théâtre',
       poetry: 'Poésie',
       shortStory: 'Nouvelle',
+      other: 'Autre',
 
       action: 'Action',
       adventure: 'Aventure',
