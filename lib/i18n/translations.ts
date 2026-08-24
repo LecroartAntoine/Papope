@@ -403,7 +403,6 @@ export const translations = {
         photography: 'Photography',
         sportsOutdoors: 'Sports & Outdoors',
         travel: 'Travel',
-        other: 'Other',
       },
 
       // Book detail & Traces
@@ -933,7 +932,6 @@ export const translations = {
       photography: 'Photographie',
       sportsOutdoors: 'Sports & Plein air',
       travel: 'Voyage',
-      other: 'Autre',
     },
 
       // Book detail & Traces
